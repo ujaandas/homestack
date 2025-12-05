@@ -26,7 +26,7 @@ in
         admin off
       '';
       virtualHosts = {
-        "pocketid.${domain}".extraConfig = ''
+        "*.${domain}".extraConfig = ''
           reverse_proxy 192.168.100.3:3000
           tls {
             dns cloudflare {file.{$CLOUDFLARE_API_KEY}}
