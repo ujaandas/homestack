@@ -67,7 +67,13 @@ in
         };
       };
     };
-    resolved.enable = false;
+
+    resolved = {
+      enable = true;
+      dnssec = "allow-downgrade";
+      fallbackDns = [ ];
+      domains = [ "~." ];
+    };
   };
 
   nixpkgs.overlays = [
@@ -93,7 +99,6 @@ in
     };
     netbird-signal.serviceConfig = {
       Environment = [ "NB_PPROF_ADDR=6061" ];
-      ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "NB PPROF ADDR SET"' '';
     };
   };
 
