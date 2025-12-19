@@ -6,13 +6,6 @@
     hardware.url = "github:nixos/nixos-hardware/master";
     microvm.url = "github:astro/microvm.nix";
     agenix.url = "github:ryantm/agenix";
-
-    # microvms
-    db.url = "path:./vms/db";
-    auth.url = "path:./vms/auth";
-    proxy.url = "path:./vms/proxy";
-    vpn.url = "path:./vms/vpn";
-
   };
 
   outputs =
@@ -22,10 +15,6 @@
       hardware,
       microvm,
       agenix,
-      db,
-      auth,
-      proxy,
-      vpn,
     }:
     let
       username = "homelab";

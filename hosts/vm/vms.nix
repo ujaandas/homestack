@@ -1,12 +1,4 @@
-{
-  db,
-  auth,
-  proxy,
-  vpn,
-  ...
-}:
 let
-  vmdir = "/home/homelab/homelab/vms";
   secretdir = "/home/homelab/homelab/secrets";
 in
 {
@@ -48,26 +40,10 @@ in
       "vpn"
     ];
     vms = {
-      db = {
-        flake = db;
-        updateFlake = "path:${vmdir}/db";
-        restartIfChanged = true;
-      };
-      auth = {
-        flake = auth;
-        updateFlake = "path:${vmdir}/auth";
-        restartIfChanged = true;
-      };
-      proxy = {
-        flake = proxy;
-        updateFlake = "path:${vmdir}/proxy";
-        restartIfChanged = true;
-      };
-      vpn = {
-        flake = vpn;
-        updateFlake = "path:${vmdir}/vpn";
-        restartIfChanged = true;
-      };
+      db.config = import ../../vms/db;
+      auth.config = import ../../vms/auth;
+      proxy.config = import ../../vms/proxy;
+      vpn.config = import ../../vms/vpn;
     };
   };
 }
