@@ -2,6 +2,7 @@
   db,
   auth,
   proxy,
+  vpn,
   ...
 }:
 let
@@ -23,6 +24,20 @@ in
       group = "kvm";
       mode = "0440";
     };
+
+    coturn = {
+      file = "${secretdir}/coturn.age";
+      owner = "root";
+      group = "kvm";
+      mode = "0440";
+    };
+
+    netbird = {
+      file = "${secretdir}/netbird.age";
+      owner = "root";
+      group = "kvm";
+      mode = "0440";
+    };
   };
 
   microvm = {
@@ -30,6 +45,7 @@ in
       "db"
       "auth"
       "proxy"
+      "vpn"
     ];
     vms = {
       db = {
@@ -45,6 +61,11 @@ in
       proxy = {
         flake = proxy;
         updateFlake = "path:${vmdir}/proxy";
+        restartIfChanged = true;
+      };
+      vpn = {
+        flake = vpn;
+        updateFlake = "path:${vmdir}/vpn";
         restartIfChanged = true;
       };
     };

@@ -11,6 +11,7 @@
     db.url = "path:./vms/db";
     auth.url = "path:./vms/auth";
     proxy.url = "path:./vms/proxy";
+    vpn.url = "path:./vms/vpn";
 
   };
 
@@ -24,6 +25,7 @@
       db,
       auth,
       proxy,
+      vpn,
     }:
     let
       username = "homelab";

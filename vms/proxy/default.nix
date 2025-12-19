@@ -27,10 +27,17 @@ in
       '';
       virtualHosts = {
         "*.${domain}".extraConfig = ''
-          reverse_proxy 192.168.100.3:3000
           tls {
             dns cloudflare {file.{$CLOUDFLARE_API_KEY}}
           }
+        '';
+
+        "pocketid.${domain}".extraConfig = ''
+          reverse_proxy 192.168.100.3:3000
+        '';
+
+        "netbird.${domain}".extraConfig = ''
+          reverse_proxy 192.168.100.5:443
         '';
       };
     };
@@ -43,6 +50,7 @@ in
         server = [ "1.1.1.1" ];
         address = [
           "/pocketid.${domain}/192.168.100.4"
+          "/netbird.${domain}/192.168.100.4"
         ];
       };
     };

@@ -14,11 +14,15 @@
         ensureDBOwnership = true;
       }
     ];
-    settings.listen_addresses = lib.mkForce "*";
+    settings = {
+      listen_addresses = lib.mkForce "*";
+      # ssl = true;
+    };
 
     authentication = lib.mkOverride 10 ''
       local all all trust
       host pocketid pocketid 192.168.100.0/24 trust
+      hostssl pocketid pocketid 192.168.100.0/24 trust
     '';
   };
 

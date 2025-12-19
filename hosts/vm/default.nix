@@ -41,6 +41,7 @@
       "db"
       "auth"
       "proxy"
+      "vpn"
     ];
 
     interfaces.br0.ipv4.addresses = [

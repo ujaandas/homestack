@@ -14,4 +14,14 @@ in
     homelab-sys
     homelab-root
   ];
+  "coturn.age".publicKeys = [
+    homelab-user
+    homelab-sys
+    homelab-root
+  ];
+  "netbird.age".publicKeys = [
+    homelab-user
+    homelab-sys
+    homelab-root
+  ];
 }
