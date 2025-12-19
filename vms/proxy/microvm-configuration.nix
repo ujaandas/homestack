@@ -29,7 +29,7 @@
     ];
 
     credentialFiles = {
-      CLOUDFLARE = "/run/agenix/cloudflare";
+      CLOUDFLARE = "/run/agenix/cloudflare_dns";
     };
   };
 }

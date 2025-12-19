@@ -7,7 +7,7 @@
       {
         mountPoint = "/";
         image = "root.img";
-        size = 512;
+        size = 1024;
       }
     ];
 
@@ -31,6 +31,7 @@
     credentialFiles = {
       COTURN = "/run/agenix/coturn";
       NETBIRD = "/run/agenix/netbird";
+      CLOUDFLARE = "/run/agenix/cloudflare_dns";
     };
   };
 }

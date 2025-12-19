@@ -10,8 +10,8 @@ in
       mode = "0440";
     };
 
-    cloudflare = {
-      file = "${secretdir}/cloudflare.age";
+    cloudflare_dns = {
+      file = "${secretdir}/cloudflare_dns.age";
       owner = "root";
       group = "kvm";
       mode = "0440";

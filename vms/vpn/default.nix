@@ -2,6 +2,8 @@
   config,
   lib,
   pkgs,
+  coturnSecretPath,
+  netbirdSecretPath,
   ...
 }:
 let
@@ -58,6 +60,28 @@ in
               Audience = clientId;
               ClientID = clientId;
             };
+
+            TURNConfig = {
+              Secret = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
+              CredentialsTTL = "12h";
+              TimeBasedCredentials = false;
+              Turns = [
+                {
+                  Password = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
+                  Proto = "udp";
+                  URI = "turn:netbird.${domain}:3478";
+                  Username = "netbird";
+                }
+              ];
+            };
+
+            Relay = {
+              Addresses = [ "rels://netbird.${domain}:33080" ];
+              CredentialsTTL = "24h";
+              Secret = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
+            };
+
+            DataStoreEncryptionKey = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
           };
         };
 
@@ -91,24 +115,40 @@ in
     })
   ];
 
-  systemd.services = {
-    coturn.serviceConfig = {
-      LoadCredential = [ "COTURN" ];
-      Environment = [ ''COTURN_PASSWORD=%d/COTURN'' ];
-      ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/COTURN"' '';
-    };
-    netbird-signal.serviceConfig = {
-      Environment = [ "NB_PPROF_ADDR=6061" ];
-    };
-  };
-
   security.acme = {
     acceptTerms = true;
     defaults = {
       email = "ujaandas03@gmail.com";
       dnsResolver = "192.168.100.4";
     };
-    certs."netbird.ujaan.me".dnsProvider = "cloudflare";
+    certs."netbird.ujaan.me" = {
+      dnsProvider = "cloudflare";
+      # environmentFile = "/run/secrets/cloudflare.env";
+    };
+  };
+
+  systemd.services = {
+    coturn.serviceConfig = {
+      LoadCredential = [ "COTURN" ];
+      Environment = [ ''COTURN_PASSWORD=%d/COTURN'' ];
+      ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/COTURN"' '';
+    };
+
+    "acme-order-renew-netbird.ujaan.me".serviceConfig = {
+      LoadCredential = [ "CLOUDFLARE" ];
+      Environment = [ ''CLOUDFLARE_DNS_API_TOKEN_FILE=%d/CLOUDFLARE'' ];
+      ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/CLOUDFLARE"' '';
+    };
+
+    netbird-signal.serviceConfig = {
+      Environment = [ "NB_PPROF_ADDR=6061" ];
+    };
+  };
+
+  fileSystems."/tmp" = {
+    device = "tmpfs";
+    fsType = "tmpfs";
+    options = [ "size=1G" ];
   };
 
   networking = {

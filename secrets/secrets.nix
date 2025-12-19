@@ -9,7 +9,7 @@ in
     homelab-sys
     homelab-root
   ];
-  "cloudflare.age".publicKeys = [
+  "cloudflare_dns.age".publicKeys = [
     homelab-user
     homelab-sys
     homelab-root
@@ -24,4 +24,5 @@ in
     homelab-sys
     homelab-root
   ];
+
 }
