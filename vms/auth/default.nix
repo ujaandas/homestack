@@ -12,10 +12,10 @@
   services.pocket-id = {
     enable = true;
     settings = {
-      APP_URL = "http://192.168.100.3:3000";
+      APP_URL = "https://pocketid.ujaan.me";
       HOST = "192.168.100.3";
       PORT = 3000;
-      TRUST_PROXY = false;
+      TRUST_PROXY = true;
       ANALYTICS_DISABLED = true;
       DB_PROVIDER = "postgres";
       DB_CONNECTION_STRING = "postgresql://pocketid@192.168.100.2:5432/pocketid";

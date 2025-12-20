@@ -8,7 +8,7 @@
 }:
 let
   domain = "ujaan.me";
-  clientId = "8f2614e8-d303-4e70-a5c5-7d6f0f6c8f7b";
+  clientId = "f6265027-af5e-47b8-a5a8-97e076688d88";
 in
 {
   imports = [
@@ -20,6 +20,7 @@ in
     netbird = {
       server = {
         enable = true;
+        enableNginx = true;
         domain = "netbird.${domain}";
 
         coturn = {
@@ -31,6 +32,7 @@ in
 
         dashboard = {
           enable = true;
+          enableNginx = true;
           settings = {
             AUTH_AUTHORITY = "https://pocketid.${domain}";
             USE_AUTH0 = false;
@@ -38,11 +40,15 @@ in
             AUTH_CLIENT_ID = clientId;
             AUTH_SUPPORTED_SCOPES = "openid profile email groups";
             NETBIRD_TOKEN_SOURCE = "idToken";
+            AUTH_REDIRECT_URI="/auth";
+            AUTH_SILENT_REDIRECT_URI="/silent-auth";
+            
           };
         };
 
         management = {
           enable = true;
+          enableNginx = true;
           disableAnonymousMetrics = true;
           oidcConfigEndpoint = "https://pocketid.${domain}/.well-known/openid-configuration";
 
@@ -51,6 +57,7 @@ in
 
             HttpConfig.AuthAudience = clientId;
             IdpManagerConfig.ClientConfig.ClientID = clientId;
+
             DeviceAuthorizationFlow.ProviderConfig = {
               Audience = clientId;
               ClientID = clientId;
@@ -87,7 +94,7 @@ in
 
         signal = {
           enable = true;
-          extraOptions = [ "NB_PPROF_ADDR=6061" ];
+          enableNginx = true;
         };
       };
     };
@@ -157,8 +164,23 @@ in
     firewall = {
       allowedTCPPorts = [
         22
+        80
+        443
+        3478
+        10000
+        33080
       ];
-      # allowedUDPPorts = [ 53 ];
+      allowedUDPPorts = [
+        3478
+        5349
+        33080
+      ];
+      allowedUDPPortRanges = [
+        {
+          from = 40000;
+          to = 40050;
+        }
+      ];
     };
     nameservers = [ "192.168.100.4" ];
     useHostResolvConf = false;

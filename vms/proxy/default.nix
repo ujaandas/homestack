@@ -37,7 +37,7 @@ in
         '';
 
         "netbird.${domain}".extraConfig = ''
-          reverse_proxy 192.168.100.5:443
+          reverse_proxy 192.168.100.5
         '';
       };
     };
