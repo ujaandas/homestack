@@ -27,10 +27,10 @@
   };
 
   vms = {
-    db.enable = false;
-    auth.enable = false;
-    proxy.enable = false;
-    vpn.enable = false;
+    db.enable = true;
+    auth.enable = true;
+    proxy.enable = true;
+    vpn.enable = true;
   };
 
   # dont forget to run Set-VMProcessor -VMName "homelab" -ExposeVirtualizationExtensions $true
@@ -130,7 +130,6 @@
       "wheel"
     ];
     packages = with pkgs; [ ];
-    shell = pkgs.zsh;
   };
 
   # Allow unfree packages
@@ -144,7 +143,6 @@
   ];
 
   programs = {
-    zsh.enable = true;
     direnv.enable = true;
     nix-ld.enable = true;
   };

@@ -29,7 +29,7 @@
     ];
 
     credentialFiles = {
-      POCKETID = "/run/agenix/pocketid";
+      POCKETID_ENC_KEY = "/run/agenix/pocketid_enc_key";
     };
   };
 }

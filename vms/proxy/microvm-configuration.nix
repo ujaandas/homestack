@@ -29,7 +29,7 @@
     ];
 
     credentialFiles = {
-      CLOUDFLARE = "/run/agenix/cloudflare_dns";
+      CLOUDFLARE_DNS_KEY = "/run/agenix/cloudflare_dns_key";
     };
   };
 }

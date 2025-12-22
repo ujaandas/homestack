@@ -27,9 +27,8 @@
   systemd = {
     services.pocket-id = {
       serviceConfig = {
-        LoadCredential = [ "POCKETID" ];
-        Environment = [ ''ENCRYPTION_KEY_FILE=%d/POCKETID'' ];
-        ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/POCKETID"' '';
+        LoadCredential = [ "POCKETID_ENC_KEY" ];
+        Environment = [ ''ENCRYPTION_KEY_FILE=%d/POCKETID_ENC_KEY'' ];
       };
     };
 

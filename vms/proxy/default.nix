@@ -59,9 +59,8 @@ in
   systemd = {
     services.caddy = {
       serviceConfig = {
-        LoadCredential = [ "CLOUDFLARE" ];
-        Environment = [ ''CLOUDFLARE_API_KEY=%d/CLOUDFLARE'' ];
-        ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/CLOUDFLARE"' '';
+        LoadCredential = [ "CLOUDFLARE_DNS_KEY" ];
+        Environment = [ ''CLOUDFLARE_API_KEY=%d/CLOUDFLARE_DNS_KEY'' ];
       };
     };
   };
