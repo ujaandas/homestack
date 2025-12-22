@@ -2,14 +2,36 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ../shared/vms.nix
+    ../../secrets
   ];
+
+  secrets = {
+    pocketid_enc_key.enable = true;
+    cloudflare_dns_key.enable = true;
+    netbird_pocketid_api_key.enable = true;
+    netbird_turn_key.enable = true;
+    netbird_relay_key.enable = true;
+    netbird_data_store_enc_key.enable = true;
+  };
+
+  vms = {
+    db.enable = false;
+    auth.enable = false;
+    proxy.enable = false;
+    vpn.enable = false;
+  };
 
   # dont forget to run Set-VMProcessor -VMName "homelab" -ExposeVirtualizationExtensions $true
 
