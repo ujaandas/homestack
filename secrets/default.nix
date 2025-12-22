@@ -28,6 +28,7 @@ let
       ${name} = mkVmSecret name;
     };
 
+  # TODO: read secrets.nix instead for single source of truth
   secrets = [
     "pocketid_enc_key"
     "cloudflare_dns_key"
