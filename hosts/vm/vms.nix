@@ -1,35 +1,16 @@
-let
-  secretdir = "/home/homelab/homelab/secrets";
-in
+{ config, ... }:
 {
-  age.secrets = {
-    pocketid = {
-      file = "${secretdir}/pocketid.age";
-      owner = "root";
-      group = "kvm";
-      mode = "0440";
-    };
+  imports = [
+    ../../secrets
+  ];
 
-    cloudflare_dns = {
-      file = "${secretdir}/cloudflare_dns.age";
-      owner = "root";
-      group = "kvm";
-      mode = "0440";
-    };
-
-    coturn = {
-      file = "${secretdir}/coturn.age";
-      owner = "root";
-      group = "kvm";
-      mode = "0440";
-    };
-
-    netbird = {
-      file = "${secretdir}/netbird.age";
-      owner = "root";
-      group = "kvm";
-      mode = "0440";
-    };
+  secrets = {
+    pocketid_enc_key.enable = true;
+    cloudflare_dns_key.enable = true;
+    netbird_pocketid_api_key.enable = true;
+    netbird_turn_key.enable = true;
+    netbird_relay_key.enable = true;
+    netbird_data_store_enc_key.enable = true;
   };
 
   microvm = {

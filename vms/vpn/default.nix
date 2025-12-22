@@ -17,6 +17,15 @@ in
 
   services = {
     openssh.enable = true;
+
+    nginx.virtualHosts."netbird.${domain}".locations."/" = {
+      tryFiles = lib.mkForce "$uri $uri/ /index.html";
+    };
+
+    # very confusingly, things from setup.env are split between modules with odd names,
+    # so i've tried my best to match them up from https://docs.netbird.io/selfhosted/identity-providers/pocketid
+    # also check options from https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/networking/netbird/management.nix
+    # against https://github.com/netbirdio/netbird/blob/main/infrastructure_files/management.json.tmpl
     netbird = {
       server = {
         enable = true;
@@ -33,34 +42,56 @@ in
         dashboard = {
           enable = true;
           enableNginx = true;
+          domain = "netbird.${domain}";
           settings = {
             AUTH_AUTHORITY = "https://pocketid.${domain}";
-            USE_AUTH0 = false;
-            AUTH_AUDIENCE = clientId;
-            AUTH_CLIENT_ID = clientId;
-            AUTH_SUPPORTED_SCOPES = "openid profile email groups";
-            NETBIRD_TOKEN_SOURCE = "idToken";
-            AUTH_REDIRECT_URI="/auth";
-            AUTH_SILENT_REDIRECT_URI="/silent-auth";
-            
+            USE_AUTH0 = false; # NETBIRD_USE_AUTH0
+            AUTH_CLIENT_ID = clientId; # NETBIRD_AUTH_CLIENT_ID
+            AUTH_SUPPORTED_SCOPES = "openid profile email groups"; # NETBIRD_AUTH_SUPPORTED_SCOPES
+            AUTH_AUDIENCE = clientId; # NETBIRD_AUTH_AUDIENCE
+            AUTH_REDIRECT_URI = "/auth"; # NETBIRD_AUTH_REDIRECT_URI
+            AUTH_SILENT_REDIRECT_URI = "/silent-auth"; # NETBIRD_AUTH_SILENT_REDIRECT_URI
+            NETBIRD_TOKEN_SOURCE = "idToken"; # NETBIRD_TOKEN_SOURCE
           };
         };
 
         management = {
           enable = true;
           enableNginx = true;
+          domain = "netbird.${domain}";
           disableAnonymousMetrics = true;
-          oidcConfigEndpoint = "https://pocketid.${domain}/.well-known/openid-configuration";
+          oidcConfigEndpoint = "https://pocketid.${domain}/.well-known/openid-configuration"; # NETBIRD_AUTH_OIDC_CONFIGURATION_ENDPOINT
 
+          # we're basically building the management.json here, so the netbird docs won't line up - you need to cross-check with management.json.tmpl
           settings = {
             Signal.URI = "netbird.${domain}:443";
 
-            HttpConfig.AuthAudience = clientId;
-            IdpManagerConfig.ClientConfig.ClientID = clientId;
+            HttpConfig = {
+              AuthAudience = clientId; # NETBIRD_AUTH_AUDIENCE
+              IdpSignKeyRefreshEnabled = true; # NETBIRD_MGMT_IDP_SIGNKEY_REFRESH
+            };
 
-            DeviceAuthorizationFlow.ProviderConfig = {
-              Audience = clientId;
-              ClientID = clientId;
+            DeviceAuthorizationFlow = {
+              Provider = "none"; # NETBIRD_AUTH_DEVICE_AUTH_PROVIDER
+              ProviderConfig = {
+                ClientID = "netbird"; # NETBIRD_AUTH_DEVICE_AUTH_CLIENT_ID
+                Audience = "netbird"; # NETBIRD_AUTH_DEVICE_AUTH_AUDIENCE
+                Scope = "openid profile email groups"; # NETBIRD_AUTH_DEVICE_AUTH_SCOPE
+                UseIDToken = true; # NETBIRD_AUTH_DEVICE_AUTH_USE_ID_TOKEN
+              };
+            };
+
+            IdpManagerConfig = {
+              ManagerType = "pocketid"; # NETBIRD_MGMT_IDP
+              ClientConfig = {
+                ClientID = "netbird"; # NETBIRD_IDP_MGMT_CLIENT_ID
+              };
+
+              ExtraConfig = {
+                # found these in source code: config.ExtraConfig["ApiToken"]
+                ManagementEndpoint = "https://pocketid.ujaan.me"; # NETBIRD_IDP_MGMT_EXTRA_MANAGEMENT_ENDPOINT
+                ApiToken = "awsQisTYYrEin7Klp8CWRr4X7TvODYV0"; # NETBIRD_IDP_MGMT_EXTRA_API_TOKEN
+              };
             };
 
             PKCEAuthorizationFlow.ProviderConfig = {
@@ -95,6 +126,7 @@ in
         signal = {
           enable = true;
           enableNginx = true;
+          domain = "netbird.${domain}";
         };
       };
     };
@@ -141,6 +173,17 @@ in
       ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/COTURN"' '';
     };
 
+    netbird-management.serviceConfig = {
+      Environment = ''
+        NETBIRD_DOMAIN="netbird.ujaan.me"
+        NETBIRD_DISABLE_LETSENCRYPT=true # behind reverse proxy
+        NETBIRD_MGMT_API_PORT=443
+        NETBIRD_SIGNAL_PORT=443
+        TURN_MIN_PORT=40000
+        TURN_MAX_PORT=40050
+      '';
+    };
+
     "acme-order-renew-netbird.ujaan.me".serviceConfig = {
       LoadCredential = [ "CLOUDFLARE" ];
       Environment = [ ''CLOUDFLARE_DNS_API_TOKEN_FILE=%d/CLOUDFLARE'' ];
@@ -166,20 +209,9 @@ in
         22
         80
         443
-        3478
-        10000
-        33080
       ];
       allowedUDPPorts = [
         3478
-        5349
-        33080
-      ];
-      allowedUDPPortRanges = [
-        {
-          from = 40000;
-          to = 40050;
-        }
       ];
     };
     nameservers = [ "192.168.100.4" ];

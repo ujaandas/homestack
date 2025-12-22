@@ -4,25 +4,34 @@ let
   homelab-root = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGjAWoqQYGYE9OsJTTYesDt1xm89rVSMVZUiW07UWsvI root@nixos";
 in
 {
-  "pocketid.age".publicKeys = [
+  "pocketid_enc_key.age".publicKeys = [
     homelab-user
     homelab-sys
     homelab-root
   ];
-  "cloudflare_dns.age".publicKeys = [
+  "cloudflare_dns_key.age".publicKeys = [
     homelab-user
     homelab-sys
     homelab-root
   ];
-  "coturn.age".publicKeys = [
+  "netbird_pocketid_api_key.age".publicKeys = [
     homelab-user
     homelab-sys
     homelab-root
   ];
-  "netbird.age".publicKeys = [
+  "netbird_turn_key.age".publicKeys = [
     homelab-user
     homelab-sys
     homelab-root
   ];
-
+  "netbird_relay_key.age".publicKeys = [
+    homelab-user
+    homelab-sys
+    homelab-root
+  ];
+  "netbird_data_store_enc_key.age".publicKeys = [
+    homelab-user
+    homelab-sys
+    homelab-root
+  ];
 }
