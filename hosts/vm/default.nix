@@ -8,7 +8,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ./vms.nix
+    ../shared/vms.nix
   ];
 
   # dont forget to run Set-VMProcessor -VMName "homelab" -ExposeVirtualizationExtensions $true
