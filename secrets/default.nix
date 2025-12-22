@@ -2,10 +2,11 @@
 let
 
   inherit (lib)
-    mkIf
-    genAttrs
     mkOption
-    foldl'
+    genAttrs
+    optionalAttrs
+    removeSuffix
+    map
     ;
 
   inherit (lib.types) bool;
@@ -21,22 +22,7 @@ let
     mode = "0440";
   };
 
-  # helper for use in agenix secret enabling
-  mkEnabledSecret =
-    name:
-    mkIf config.secrets.${name}.enable {
-      ${name} = mkVmSecret name;
-    };
-
-  # TODO: read secrets.nix instead for single source of truth
-  secrets = [
-    "pocketid_enc_key"
-    "cloudflare_dns_key"
-    "netbird_pocketid_api_key"
-    "netbird_turn_key"
-    "netbird_relay_key"
-    "netbird_data_store_enc_key"
-  ];
+  secrets = map (name: removeSuffix ".age" name) (builtins.attrNames (import ./secrets.nix));
 in
 {
   options.secrets = genAttrs secrets (name: {
@@ -47,5 +33,7 @@ in
     };
   });
 
-  config.age.secrets = foldl' (acc: name: acc // mkEnabledSecret name) { } secrets;
+  config.age.secrets = genAttrs secrets (
+    name: optionalAttrs config.secrets.${name}.enable (mkVmSecret name)
+  );
 }
