@@ -1,5 +1,5 @@
 # 🏠 homestack
-Welcome home! This is Homestacka fully declarative, multi-layered private "cloud-at-home" architecture. Built on NixOS it treats infrastructure as code to create a reproducible, modular, and cryptographically secure service environment.
+Welcome home! This is Homestack, a fully declarative, multi-layered private "cloud-at-home" architecture. Built on NixOS it treats infrastructure as code to create a reproducible, modular, and cryptographically secure service environment.
 
 ## Overview
 Homestack decouples services from hardware. By leveraging MicroVM.nix, I run a fleet of specialized, single-purpose guests on top of a hardened NixOS host. This architecture ensures that even if one service is compromised, the rest of the stack remains isolated.
