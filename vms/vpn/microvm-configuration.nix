@@ -30,6 +30,10 @@
 
     credentialFiles = {
       CLOUDFLARE_DNS_KEY = "/run/agenix/cloudflare_dns_key";
+      DATA_STORE_ENC_KEY = "/run/agenix/netbird_data_store_enc_key";
+      POCKETID_API_KEY = "/run/agenix/netbird_pocketid_api_key";
+      RELAY_KEY = "/run/agenix/netbird_relay_key";
+      TURN_KEY = "/run/agenix/netbird_turn_key";
     };
   };
 }

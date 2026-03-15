@@ -35,8 +35,7 @@ in
         coturn = {
           enable = true;
           useAcmeCertificates = true;
-          # passwordFile = "%d/COTURN";
-          password = "shitbag";
+          passwordFile = "/run/credentials/coturn.service/TURN_KEY";
         };
 
         dashboard = {
@@ -100,12 +99,12 @@ in
             };
 
             TURNConfig = {
-              Secret = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
+              Secret._secret = "/run/credentials/netbird-management.service/TURN_KEY";
               CredentialsTTL = "12h";
               TimeBasedCredentials = false;
               Turns = [
                 {
-                  Password = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
+                  Password._secret = "/run/credentials/netbird-management.service/TURN_KEY";
                   Proto = "udp";
                   URI = "turn:netbird.${domain}:3478";
                   Username = "netbird";
@@ -116,10 +115,10 @@ in
             Relay = {
               Addresses = [ "rels://netbird.${domain}:33080" ];
               CredentialsTTL = "24h";
-              Secret = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
+              Secret._secret = "/run/credentials/netbird-management.service/RELAY_KEY";
             };
 
-            DataStoreEncryptionKey = "EjiKJTChL55T09m/KXWAugEFiszwCaND6YhmCSCeWcM=";
+            DataStoreEncryptionKey._secret = "/run/credentials/netbird-management.service/DATA_STORE_ENC_KEY";
           };
         };
 
@@ -168,12 +167,15 @@ in
 
   systemd.services = {
     coturn.serviceConfig = {
-      LoadCredential = [ "COTURN" ];
-      Environment = [ ''COTURN_PASSWORD=%d/COTURN'' ];
-      ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/COTURN"' '';
+      LoadCredential = [ "TURN_KEY" ];
     };
 
     netbird-management.serviceConfig = {
+      LoadCredential = [
+        "TURN_KEY"
+        "DATA_STORE_ENC_KEY"
+        "RELAY_KEY"
+      ];
       Environment = ''
         NETBIRD_DOMAIN="netbird.ujaan.me"
         NETBIRD_DISABLE_LETSENCRYPT=true # behind reverse proxy
@@ -185,9 +187,8 @@ in
     };
 
     "acme-order-renew-netbird.ujaan.me".serviceConfig = {
-      LoadCredential = [ "CLOUDFLARE" ];
-      Environment = [ ''CLOUDFLARE_DNS_API_TOKEN_FILE=%d/CLOUDFLARE'' ];
-      ExecStartPre = ''${pkgs.bash}/bin/bash -c 'cat "$CREDENTIALS_DIRECTORY/CLOUDFLARE"' '';
+      LoadCredential = [ "CLOUDFLARE_DNS_KEY" ];
+      Environment = [ ''CLOUDFLARE_DNS_API_TOKEN_FILE=%d/CLOUDFLARE_DNS_KEY'' ];
     };
 
     netbird-signal.serviceConfig = {

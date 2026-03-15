@@ -46,8 +46,6 @@
 
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = [
-          self.packages.${system}.build
-          self.packages.${system}.activate
           self.packages.${system}.format
           self.packages.${system}.lint
           self.packages.${system}.check
@@ -57,17 +55,11 @@
       };
 
       packages.${system} = {
-        build = mkScript "build" ''sudo nixos-rebuild build --flake .\#vm'';
-        activate = mkScript "activate" ''
-          if [[ -e result/bin/switch-to-configuration ]]; then
-            sudo result/bin/switch-to-configuration switch
-          fi
-        '';
         format = mkScript "format" ''treefmt --walk git'';
         lint = mkScript "lint" ''statix check --ignore result .direnv'';
         check = mkScript "check" ''nix flake check'';
-        test-all = mkScript "test-all" ''check && format && lint && build'';
-        rebuild = mkScript "rebuild" ''test-all && activate'';
+        test-all = mkScript "test-all" ''check && format && lint'';
+        rebuild = mkScript "rebuild" ''test-all && sudo nixos-rebuild switch --flake .\#vm'';
       };
     };
 }
