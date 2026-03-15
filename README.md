@@ -17,7 +17,7 @@ We adhere to the Single Responsibility Principle. Each guest is a specialized Mi
 - `db` (Postgres): the persistent data layer for the stack, isolated from the public-facing proxy
 
 > #### Why NixOS?
-> - Atomic reproducibility: the entire environment—from OIDC scopes to firewall rules—can be recreated on a new machine in minutes with bitwise precision
+> - Atomic reproducibility: the entire environment, from OIDC scopes to firewall rules, can be recreated on a new machine in minutes with bitwise precision
 > - DRY modules: Using a custom module system, I define service logic once (e.g., `modules/services/netbird.nix`) and "consume" it across any host I choose
 > - Generational rollbacks: every change creates a new system generation. If a config is faulty, I simply reboot into the previous version
 
