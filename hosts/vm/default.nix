@@ -6,6 +6,7 @@
   config,
   lib,
   pkgs,
+  agenix,
   ...
 }:
 
@@ -137,9 +138,10 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    neovim
-    git
+  environment.systemPackages = [
+    agenix.packages.x86_64-linux.default
+    pkgs.neovim
+    pkgs.git
   ];
 
   programs = {

@@ -2,13 +2,11 @@
   config,
   lib,
   pkgs,
-  coturnSecretPath,
-  netbirdSecretPath,
   ...
 }:
 let
   domain = "ujaan.me";
-  clientId = "f6265027-af5e-47b8-a5a8-97e076688d88";
+  clientId = "4716b464-7a15-4e06-aadd-b985650f2cba";
 in
 {
   imports = [
@@ -89,7 +87,7 @@ in
               ExtraConfig = {
                 # found these in source code: config.ExtraConfig["ApiToken"]
                 ManagementEndpoint = "https://pocketid.ujaan.me"; # NETBIRD_IDP_MGMT_EXTRA_MANAGEMENT_ENDPOINT
-                ApiToken = "awsQisTYYrEin7Klp8CWRr4X7TvODYV0"; # NETBIRD_IDP_MGMT_EXTRA_API_TOKEN
+                ApiToken = ""; # NETBIRD_IDP_MGMT_EXTRA_API_TOKEN
               };
             };
 
@@ -170,19 +168,33 @@ in
       LoadCredential = [ "TURN_KEY" ];
     };
 
-    netbird-management.serviceConfig = {
-      LoadCredential = [
-        "TURN_KEY"
-        "DATA_STORE_ENC_KEY"
-        "RELAY_KEY"
-      ];
-      Environment = ''
-        NETBIRD_DOMAIN="netbird.ujaan.me"
-        NETBIRD_DISABLE_LETSENCRYPT=true # behind reverse proxy
-        NETBIRD_MGMT_API_PORT=443
-        NETBIRD_SIGNAL_PORT=443
-        TURN_MIN_PORT=40000
-        TURN_MAX_PORT=40050
+    netbird-management = {
+      serviceConfig = {
+        LoadCredential = [
+          "TURN_KEY"
+          "DATA_STORE_ENC_KEY"
+          "RELAY_KEY"
+          "POCKETID_API_KEY"
+        ];
+
+        Environment = ''
+          NETBIRD_DOMAIN="netbird.ujaan.me"
+          NETBIRD_DISABLE_LETSENCRYPT=true # behind reverse proxy
+          NETBIRD_MGMT_API_PORT=443
+          NETBIRD_SIGNAL_PORT=443
+          TURN_MIN_PORT=40000
+          TURN_MAX_PORT=40050
+        '';
+      };
+
+      preStart = lib.mkAfter ''
+        API_TOKEN=$(cat "$CREDENTIALS_DIRECTORY/POCKETID_API_KEY")
+
+        ${pkgs.jq}/bin/jq --arg token "$API_TOKEN" \
+          '.IdpManagerConfig.ExtraConfig.ApiToken = $token' \
+          /var/lib/netbird-mgmt/management.json > /var/lib/netbird-mgmt/management.json.tmp
+
+        mv /var/lib/netbird-mgmt/management.json.tmp /var/lib/netbird-mgmt/management.json
       '';
     };
 

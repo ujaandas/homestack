@@ -13,6 +13,7 @@
   imports = [ ];
 
   boot = {
+    kernel.sysctl."net.ipv4.ip_foward" = 1;
     initrd = {
       availableKernelModules = [
         "sd_mod"
