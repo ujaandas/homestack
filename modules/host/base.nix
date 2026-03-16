@@ -44,7 +44,7 @@ in
       description = "Enable SSH on this host.";
     };
 
-    nixLdEnabled = lib.mkEnableOption "Enable nix-ld for this host (useful if you plan to SSH with VSCode or other forks)";
+    nixLdEnabled = lib.mkEnableOption "Enable nix-ld for this host (useful if you plan to SSH with VSCode or other forks).";
 
     systemPackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
@@ -114,7 +114,10 @@ in
     programs.direnv.enable = true;
     programs.nix-ld.enable = cfg.nixLdEnabled;
 
-    services.openssh.enable = cfg.sshEnabled;
+    services.openssh = {
+      enable = cfg.sshEnabled;
+      openFirewall = true;
+    };
 
     # User settings
     users.users.${cfg.username} = {

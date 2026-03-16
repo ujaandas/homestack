@@ -70,7 +70,7 @@
         lint = mkScript "lint" ''statix check --ignore result .direnv'';
         check = mkScript "check" ''nix flake check'';
         test-all = mkScript "test-all" ''check && format && lint'';
-        rebuild = mkScript "rebuild" ''test-all && sudo nixos-rebuild switch --flake .\#vm'';
+        rebuild = mkScript "rebuild" ''test-all && sudo nixos-rebuild switch --flake .\#sachiel'';
       };
     };
 }
