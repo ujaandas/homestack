@@ -44,6 +44,17 @@
         ];
       };
 
+      nixosConfigurations.sachiel = nixpkgs.lib.nixosSystem {
+        specialArgs = inputs // {
+          inherit username;
+          inherit system;
+        };
+        inherit system;
+        modules = [
+          ./hosts/sachiel
+        ];
+      };
+
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = [
           self.packages.${system}.format
