@@ -8,10 +8,10 @@
 }:
 # These are "global" settings that apply to every NixOS machine/host on Homestack.
 let
-  cfg = config.homestack.base;
+  cfg = config.homestack.host.base;
 in
 {
-  options.homestack.base = {
+  options.homestack.host.base = {
     enable = lib.mkEnableOption "Enable sane defaults for this host.";
 
     username = lib.mkOption {

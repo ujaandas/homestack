@@ -29,5 +29,11 @@
     nameservers = [ "192.168.100.4" ];
   };
 
+  # Hypervisor VM settings
+  homestack.vms = {
+    enable = true;
+
+  };
+
   system.stateVersion = "25.05";
 }
