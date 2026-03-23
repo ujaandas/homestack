@@ -42,10 +42,10 @@ in
               };
 
               hardware = {
-		storage = lib.mkOption {
-		  type = lib.types.int;
-		  default = 512;
-		};
+                storage = lib.mkOption {
+                  type = lib.types.int;
+                  default = 512;
+                };
 
                 memory = lib.mkOption {
                   type = lib.types.int;
@@ -74,7 +74,13 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    microvms.vms = mapAttrs (
+    assertions = [
+      {
+        assertion = config ? microvm;
+        message = "microvm module must be imported when using homestack.host.hypervisor";
+      }
+    ];
+    microvms.vms = lib.mapAttrs (
       name: vm:
       lib.mkIf vm.enable {
         autostart = true;
@@ -158,6 +164,6 @@ in
           services.openssh.enable = true;
         };
       }
-    ) cfg;
+    ) cfg.vms;
   };
 }
