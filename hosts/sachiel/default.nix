@@ -13,26 +13,40 @@
     ./hardware-configuration.nix
     ../../modules/host/base.nix
     ../../modules/host/networking.nix
+    ../../modules/host/hypervisor.nix
   ];
 
   # Base settings
-  homestack.base = {
-    enable = true;
-    hostname = "sachiel";
-  };
+  homestack.host = {
+    base = {
+      enable = true;
+      hostname = "sachiel";
+    };
 
-  # Hypervisor network settings
-  homestack.networking = {
-    enable = true;
-    externalInterface = "eth0";
-    bridgeIp = "192.168.100.1";
-    nameservers = [ "192.168.100.4" ];
-  };
+    # Hypervisor network settings
+    networking = {
+      enable = true;
+      externalInterface = "eth0";
+      bridgeIp = "192.168.100.1";
+    };
 
-  # Hypervisor VM settings
-  homestack.vms = {
-    enable = true;
-
+    # Hypervisor VM settings
+    hypervisor = {
+      enable = true;
+      vms = {
+        db = {
+          enable = true;
+          networking = {
+            ip = "192.168.100.2";
+            mac = "02:00:00:00:00:01";
+            TCPPorts = [
+              22
+              5432
+            ];
+          };
+        };
+      };
+    };
   };
 
   system.stateVersion = "25.05";

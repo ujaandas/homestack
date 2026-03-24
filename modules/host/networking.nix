@@ -23,8 +23,6 @@ in
     networking = {
       useNetworkd = true;
 
-      bridges.br0.interfaces = cfg.guestInterfaces;
-
       nat = {
         enable = true;
         internalInterfaces = [ "br0" ];

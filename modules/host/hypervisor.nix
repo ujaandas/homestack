@@ -1,5 +1,7 @@
 { config, lib, ... }:
 let
+  servicesDir = ../services;
+  services = builtins.attrNames (builtins.readDir servicesDir);
   cfg = config.homestack.host.hypervisor;
 in
 {
@@ -8,15 +10,28 @@ in
 
     vms = lib.mkOption {
       type = lib.types.attrsOf (
-        types.submodule (
+        lib.types.submodule (
           { name, ... }:
           {
             options = {
               enable = lib.mkEnableOption "Enable VM ${name}";
 
-              module = lib.mkOption {
-                type = lib.types.path;
-                description = "Path to VM module";
+              services = lib.mkOption {
+                type = lib.types.attrsOf (
+                  lib.types.submodule (
+                    { name2, ... }:
+                    {
+                      options = {
+                        enable = lib.mkEnableOption "Enable VM service ${name2}.";
+                        extraConfig = lib.mkOption {
+                          type = lib.types.attrs;
+                          default = { };
+                        };
+                      };
+                    }
+                  )
+                );
+                default = { };
               };
 
               networking = {
@@ -42,12 +57,12 @@ in
               };
 
               hardware = {
-                storage = lib.mkOption {
+                size = lib.mkOption {
                   type = lib.types.int;
                   default = 512;
                 };
 
-                memory = lib.mkOption {
+                mem = lib.mkOption {
                   type = lib.types.int;
                   default = 1024;
                 };
@@ -62,8 +77,9 @@ in
                   type = lib.types.attrsOf lib.types.path;
                 };
               };
-              extraConfig = mkOption {
-                type = types.attrs;
+
+              extraConfig = lib.mkOption {
+                type = lib.types.attrs;
                 default = { };
               };
             };
@@ -80,23 +96,27 @@ in
         message = "microvm module must be imported when using homestack.host.hypervisor";
       }
     ];
-    microvms.vms = lib.mapAttrs (
+
+    microvm.vms = lib.mapAttrs (
       name: vm:
       lib.mkIf vm.enable {
         autostart = true;
         restartIfChanged = true;
 
         config = {
-          imports = [ vm.module ];
+          imports = builtins.map (s: import "${servicesDir}/${s}.nix") (
+            builtins.filter (name: vm.services ? name && vm.services.${name}.enable) services
+          );
+
           microvm = {
-            mem = vm.hardware.memory;
-            vcpu = vm.hardware.vcpu;
+            inherit (vm.hardware) mem;
+            inherit (vm.hardware) vcpu;
 
             volumes = [
               {
                 mountPoint = "/";
                 image = "root.img";
-                size = vm.hardware.storage;
+                inherit (vm.hardware) size;
               }
             ];
 
@@ -113,14 +133,14 @@ in
               {
                 type = "tap";
                 id = name;
-                mac = vm.networking.mac;
+                inherit (vm.networking) mac;
               }
             ];
           }
           // vm.extraConfig;
 
           networking = {
-            hostname = name;
+            hostName = name;
             useNetworkd = true;
             firewall.allowedTCPPorts = vm.networking.TCPPorts;
             firewall.allowedUDPPorts = vm.networking.UDPPorts;

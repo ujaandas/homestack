@@ -51,6 +51,8 @@
         };
         inherit system;
         modules = [
+          agenix.nixosModules.default
+          microvm.nixosModules.host
           ./hosts/sachiel
         ];
       };
