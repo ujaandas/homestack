@@ -44,17 +44,7 @@
               5432
             ];
           };
-          services.postgres = {
-            enable = true;
-            databases = [ "pocketid" ];
-            users = [
-              {
-                name = "pocketid";
-                ensureDBOwnership = true;
-              }
-            ];
-            authentication = "host pocketid pocketid 192.168.100.0/24 trust";
-          };
+          services.postgres.enable = true;
         };
       };
     };

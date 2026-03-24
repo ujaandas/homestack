@@ -1,10 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.homestack.host.hypervisor;
-  serviceDir = ../services;
-  services = {
-    postgres = "${serviceDir}/postgres.nix";
-  };
+  allServices = [ ../services/postgres.nix ];
 in
 {
   options.homestack.host.hypervisor = {
@@ -18,9 +15,8 @@ in
             options = {
               enable = lib.mkEnableOption "Enable VM ${name}";
 
-              # Keep this flexible, we inject attrs from each individual service so as to not bloat the hypervisor module
               services = lib.mkOption {
-                type = lib.types.attrsOf lib.types.attrs;
+                type = lib.types.attrs;
                 default = { };
               };
 
@@ -67,11 +63,6 @@ in
                   type = lib.types.attrsOf lib.types.path;
                 };
               };
-
-              extraConfig = lib.mkOption {
-                type = lib.types.attrs;
-                default = { };
-              };
             };
           }
         )
@@ -96,11 +87,9 @@ in
         restartIfChanged = true;
 
         config = {
-          imports = lib.mapAttrsToList (s: _: services.${s}) vm.services;
-          homestack.vm.services = vm.services;
+          imports = allServices;
           microvm = {
-            inherit (vm.hardware) mem;
-            inherit (vm.hardware) vcpu;
+            inherit (vm.hardware) mem vcpu;
 
             volumes = [
               {
@@ -126,8 +115,12 @@ in
                 inherit (vm.networking) mac;
               }
             ];
-          }
-          // vm.extraConfig;
+          };
+
+          services = lib.mkMerge [
+            vm.services
+            { openssh.enable = true; }
+          ];
 
           networking = {
             hostName = name;
@@ -170,8 +163,6 @@ in
             };
             channel.enable = false;
           };
-
-          services.openssh.enable = true;
         };
       }
     ) cfg.vms;

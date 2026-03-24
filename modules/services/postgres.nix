@@ -1,29 +1,19 @@
 {
-  config,
   lib,
+  config,
   pkgs,
   ...
 }:
 let
-  cfg = config.homestack.vm.services.postgres;
+  cfg = config.services.postgres;
 in
 {
-  options.homestack.vm.services.postgres = {
-    enable = lib.mkEnableOption "Enable PostgreSQL";
+  options.services.postgres = {
+    enable = lib.mkEnableOption "Enable sane PostgreSQL service.";
 
-    databases = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-    };
-
-    users = lib.mkOption {
-      type = lib.types.listOf lib.types.attrs;
-      default = [ ];
-    };
-
-    authentication = lib.mkOption {
-      type = lib.types.str;
-      default = "";
+    extraConfig = lib.mkOption {
+      type = lib.types.attrs;
+      default = { };
     };
   };
 
@@ -32,18 +22,22 @@ in
       enable = true;
       package = pkgs.postgresql_15;
 
-      ensureDatabases = cfg.databases;
-      ensureUsers = cfg.users;
+      ensureDatabases = [ "pocketid" ];
+      ensureUsers = [
+        {
+          name = "pocketid";
+          ensureDBOwnership = true;
+        }
+      ];
 
       settings.listen_addresses = lib.mkForce "*";
 
       authentication = lib.mkOverride 10 ''
         local all all trust
-        ${cfg.authentication}
+        host pocketid pocketid 192.168.100.0/24 trust
       '';
     };
 
     networking.firewall.allowedTCPPorts = [ 5432 ];
-
   };
 }
