@@ -97,6 +97,8 @@ in
       }
     ];
 
+    networking.bridges.br0.interfaces = builtins.attrNames cfg.vms;
+
     microvm.vms = lib.mapAttrs (
       name: vm:
       lib.mkIf vm.enable {

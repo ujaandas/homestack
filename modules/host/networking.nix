@@ -23,6 +23,13 @@ in
     networking = {
       useNetworkd = true;
 
+      interfaces.br0.ipv4.addresses = [
+        {
+          address = cfg.bridgeIp;
+          prefixLength = 24;
+        }
+      ];
+
       nat = {
         enable = true;
         internalInterfaces = [ "br0" ];
