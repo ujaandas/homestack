@@ -1,8 +1,10 @@
 { config, lib, ... }:
 let
-  servicesDir = ../services;
-  services = builtins.attrNames (builtins.readDir servicesDir);
   cfg = config.homestack.host.hypervisor;
+  serviceDir = ../services;
+  services = {
+    postgres = "${serviceDir}/postgres.nix";
+  };
 in
 {
   options.homestack.host.hypervisor = {
@@ -16,21 +18,9 @@ in
             options = {
               enable = lib.mkEnableOption "Enable VM ${name}";
 
+              # Keep this flexible, we inject attrs from each individual service so as to not bloat the hypervisor module
               services = lib.mkOption {
-                type = lib.types.attrsOf (
-                  lib.types.submodule (
-                    { name2, ... }:
-                    {
-                      options = {
-                        enable = lib.mkEnableOption "Enable VM service ${name2}.";
-                        extraConfig = lib.mkOption {
-                          type = lib.types.attrs;
-                          default = { };
-                        };
-                      };
-                    }
-                  )
-                );
+                type = lib.types.attrsOf lib.types.attrs;
                 default = { };
               };
 
@@ -106,10 +96,8 @@ in
         restartIfChanged = true;
 
         config = {
-          imports = builtins.map (s: import "${servicesDir}/${s}.nix") (
-            builtins.filter (name: vm.services ? name && vm.services.${name}.enable) services
-          );
-
+          imports = lib.mapAttrsToList (s: _: services.${s}) vm.services;
+          homestack.vm.services = vm.services;
           microvm = {
             inherit (vm.hardware) mem;
             inherit (vm.hardware) vcpu;
