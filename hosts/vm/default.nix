@@ -18,15 +18,6 @@
     ../../secrets
   ];
 
-  secrets = {
-    pocketid_enc_key.enable = true;
-    cloudflare_dns_key.enable = true;
-    netbird_pocketid_api_key.enable = true;
-    netbird_turn_key.enable = true;
-    netbird_relay_key.enable = true;
-    netbird_data_store_enc_key.enable = true;
-  };
-
   vms = {
     db.enable = true;
     auth.enable = true;

@@ -17,9 +17,6 @@
     ../../modules/host/hypervisor.nix
   ];
 
-  secrets.pocketid_enc_key.enable = true;
-  secrets.cloudflare_dns_key.enable = true;
-
   # Base settings
   homestack.host = {
     base = {
