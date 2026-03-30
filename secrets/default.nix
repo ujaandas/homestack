@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ lib, ... }:
 let
   mkVmSecret = name: {
     file = ./. + "/${name}.age";
@@ -12,15 +12,5 @@ let
   );
 in
 {
-  options.secrets = lib.genAttrs secretNames (name: {
-    enable = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Enable the ${name} secret.";
-    };
-  });
-
-  config.age.secrets = lib.genAttrs secretNames (
-    name: lib.optionalAttrs config.secrets.${name}.enable (mkVmSecret name)
-  );
+  config.age.secrets = lib.genAttrs secretNames mkVmSecret;
 }
