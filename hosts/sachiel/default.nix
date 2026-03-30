@@ -11,16 +11,20 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../secrets
     ../../modules/host/base.nix
     ../../modules/host/networking.nix
     ../../modules/host/hypervisor.nix
   ];
+
+  secrets.pocketid_enc_key.enable = true;
 
   # Base settings
   homestack.host = {
     base = {
       enable = true;
       hostname = "sachiel";
+      nixLdEnabled = true;
     };
 
     # Hypervisor network settings
@@ -34,6 +38,7 @@
     hypervisor = {
       enable = true;
       vms = {
+
         db = {
           enable = true;
           networking = {
@@ -49,9 +54,14 @@
 
         auth = {
           enable = true;
+          credentialFiles = [
+            {
+              POCKETID_ENC_KEY = "/run/agenix/pocketid_enc_key";
+            }
+          ];
           networking = {
             ip = "192.168.100.3";
-            mac = "03:00:00:00:00:01";
+            mac = "02:00:00:00:00:02";
             TCPPorts = [
               22
               3000

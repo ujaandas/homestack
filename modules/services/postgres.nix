@@ -5,10 +5,10 @@
   ...
 }:
 let
-  cfg = config.services.postgres;
+  cfg = config.homestack.services.postgres;
 in
 {
-  options.services.postgres = {
+  options.homestack.services.postgres = {
     enable = lib.mkEnableOption "Enable sane PostgreSQL service.";
 
     extraConfig = lib.mkOption {

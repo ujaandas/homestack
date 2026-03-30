@@ -20,7 +20,7 @@ in
     };
   });
 
-  config.age.secrets = genAttrs secretNames (
+  config.age.secrets = lib.genAttrs secretNames (
     name: lib.optionalAttrs config.secrets.${name}.enable (mkVmSecret name)
   );
 }

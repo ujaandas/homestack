@@ -5,10 +5,10 @@
   ...
 }:
 let
-  cfg = config.services.pocket-id;
+  cfg = config.homestack.services.pocket-id;
 in
 {
-  options.services.pocket-id = {
+  options.homestack.services.pocket-id = {
     enable = lib.mkEnableOption "Enable sane Pocket-ID service.";
   };
 

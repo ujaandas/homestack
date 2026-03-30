@@ -1,7 +1,10 @@
 { config, lib, ... }:
 let
   cfg = config.homestack.host.hypervisor;
-  allServices = [ ../services/postgres.nix ../services/pocket-id.nix ];
+  allServices = [
+    ../services/postgres.nix
+    ../services/pocket-id.nix
+  ];
 in
 {
   options.homestack.host.hypervisor = {
@@ -18,6 +21,12 @@ in
               services = lib.mkOption {
                 type = lib.types.attrs;
                 default = { };
+              };
+
+              credentialFiles = lib.mkOption {
+                type = lib.types.listOf (lib.types.attrsOf lib.types.path);
+                default = [ ];
+                description = "List of credential file sets to inject into this VM via microvm.credentialFiles.";
               };
 
               networking = {
@@ -57,11 +66,6 @@ in
                   type = lib.types.int;
                   default = 1;
                 };
-
-                credentialFiles = lib.mkOption {
-                  default = { };
-                  type = lib.types.attrsOf lib.types.path;
-                };
               };
             };
           }
@@ -90,6 +94,7 @@ in
           imports = allServices;
           microvm = {
             inherit (vm.hardware) mem vcpu;
+            credentialFiles = lib.mkMerge vm.credentialFiles;
 
             volumes = [
               {
@@ -117,8 +122,9 @@ in
             ];
           };
 
+          homestack.services = vm.services;
+
           services = lib.mkMerge [
-            vm.services
             { openssh.enable = true; }
           ];
 
@@ -163,6 +169,8 @@ in
             };
             channel.enable = false;
           };
+
+          system.stateVersion = "26.05";
         };
       }
     ) cfg.vms;
