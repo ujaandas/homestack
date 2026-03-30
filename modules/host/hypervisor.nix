@@ -40,6 +40,18 @@ in
         default = "default";
         description = "Default SSH username for auto-generated VM host aliases.";
       };
+
+      authorizedKeys = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = "SSH public keys authorized for the default guest VM user.";
+      };
+
+      allowPasswordAuthentication = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Allow password-based SSH authentication for guest VMs.";
+      };
     };
 
     addressing = {
@@ -219,7 +231,16 @@ in
           homestack.services = vm.services;
 
           services = lib.mkMerge [
-            { openssh.enable = true; }
+            {
+              openssh = {
+                enable = true;
+                settings = {
+                  PasswordAuthentication = cfg.ssh.allowPasswordAuthentication;
+                  KbdInteractiveAuthentication = cfg.ssh.allowPasswordAuthentication;
+                  PermitRootLogin = "no";
+                };
+              };
+            }
           ];
 
           networking = {
@@ -246,9 +267,10 @@ in
           };
 
           users.users.default = {
-            initialPassword = "password";
             isNormalUser = true;
+            initialHashedPassword = "!";
             extraGroups = [ "wheel" ];
+            openssh.authorizedKeys.keys = cfg.ssh.authorizedKeys;
           };
 
           nix = {

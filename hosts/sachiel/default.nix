@@ -35,6 +35,9 @@
     # Hypervisor VM settings
     hypervisor = {
       enable = true;
+      ssh.authorizedKeys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel"
+      ];
       vms = [
         {
           name = "db";
