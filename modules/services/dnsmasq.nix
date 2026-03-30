@@ -1,11 +1,14 @@
 {
   lib,
   config,
+  vmContext ? { },
   ...
 }:
 let
   cfg = config.homestack.services.dnsmasq;
-  domain = "ujaan.me";
+  domain = vmContext.domain or "ujaan.me";
+  vmIps = vmContext.vms or { };
+  proxyIp = if builtins.hasAttr "proxy" vmIps then vmIps.proxy.ip else "192.168.100.4";
 in
 {
   options.homestack.services.dnsmasq = {
@@ -16,12 +19,12 @@ in
     services.dnsmasq = {
       enable = true;
       settings = {
-        listen-address = "192.168.100.4";
+        listen-address = proxyIp;
         bind-interfaces = true;
         server = [ "1.1.1.1" ];
         address = [
-          "/pocketid.${domain}/192.168.100.4"
-          "/netbird.${domain}/192.168.100.4"
+          "/pocketid.${domain}/${proxyIp}"
+          "/netbird.${domain}/${proxyIp}"
         ];
       };
     };

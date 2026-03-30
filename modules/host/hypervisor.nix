@@ -28,6 +28,12 @@ in
   options.homestack.host.hypervisor = {
     enable = lib.mkEnableOption "Enable and configure hypervisor capabilities for host.";
 
+    context = lib.mkOption {
+      type = lib.types.attrs;
+      default = { };
+      description = "Arbitrary values passed to all guest VMs as vmContext.";
+    };
+
     ssh = {
       enable = lib.mkOption {
         type = lib.types.bool;
@@ -93,6 +99,12 @@ in
               services = lib.mkOption {
                 type = lib.types.attrs;
                 default = { };
+              };
+
+              context = lib.mkOption {
+                type = lib.types.attrs;
+                default = { };
+                description = "Additional vmContext values for this VM (merged over hypervisor-level context).";
               };
 
               credentialFiles = lib.mkOption {
@@ -197,6 +209,12 @@ in
         restartIfChanged = true;
 
         config = {
+          _module.args.vmContext = lib.recursiveUpdate (lib.recursiveUpdate cfg.context vm.context) {
+            currentVm = name;
+            inherit (config.homestack.host.networking) bridgeIp;
+            vms = lib.mapAttrs (_: resolvedVm: resolvedVm.networking) enabledResolvedVms;
+          };
+
           imports = allServices;
           microvm = {
             inherit (vm.hardware) mem vcpu;

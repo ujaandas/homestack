@@ -2,10 +2,15 @@
   lib,
   config,
   pkgs,
+  vmContext ? { },
   ...
 }:
 let
   cfg = config.homestack.services.pocket-id;
+  domain = vmContext.domain or "ujaan.me";
+  vmIps = vmContext.vms or { };
+  authIp = if builtins.hasAttr "auth" vmIps then vmIps.auth.ip else "192.168.100.3";
+  dbIp = if builtins.hasAttr "db" vmIps then vmIps.db.ip else "192.168.100.2";
 in
 {
   options.homestack.services.pocket-id = {
@@ -16,13 +21,13 @@ in
     services.pocket-id = {
       enable = true;
       settings = {
-        APP_URL = "https://pocketid.ujaan.me";
-        HOST = "192.168.100.3";
+        APP_URL = "https://pocketid.${domain}";
+        HOST = authIp;
         PORT = 3000;
         TRUST_PROXY = true;
         ANALYTICS_DISABLED = true;
         DB_PROVIDER = "postgres";
-        DB_CONNECTION_STRING = "postgresql://pocketid@192.168.100.2:5432/pocketid";
+        DB_CONNECTION_STRING = "postgresql://pocketid@${dbIp}:5432/pocketid";
         KEYS_STORAGE = "database";
       };
     };
