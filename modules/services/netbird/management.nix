@@ -7,7 +7,9 @@
 }:
 let
   cfg = config.homestack.services.netbird;
-  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for netbird management") vmContext;
+  domain = lib.attrByPath [
+    "domain"
+  ] (throw "vmContext.domain is required for netbird management") vmContext;
   pocketIdUrl = "https://pocketid.${domain}";
   netbirdDomain = "netbird.${domain}";
   clientId = lib.attrByPath [ "netbird" "clientId" ] "4716b464-7a15-4e06-aadd-b985650f2cba" vmContext;

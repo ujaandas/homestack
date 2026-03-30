@@ -6,7 +6,9 @@
 }:
 let
   cfg = config.homestack.services.netbird;
-  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for netbird signal") vmContext;
+  domain = lib.attrByPath [
+    "domain"
+  ] (throw "vmContext.domain is required for netbird signal") vmContext;
   netbirdDomain = "netbird.${domain}";
 in
 {

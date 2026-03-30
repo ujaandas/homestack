@@ -8,7 +8,10 @@ let
   cfg = config.homestack.services.netbird;
   domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for netbird") vmContext;
   vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for netbird") vmContext;
-  proxyIp = lib.attrByPath [ "proxy" "ip" ] (throw "vmContext.vms.proxy.ip is required for netbird") vmIps;
+  proxyIp = lib.attrByPath [
+    "proxy"
+    "ip"
+  ] (throw "vmContext.vms.proxy.ip is required for netbird") vmIps;
   contactEmail = lib.attrByPath [ "contact" "email" ] "ujaandas03@gmail.com" vmContext;
   netbirdDomain = "netbird.${domain}";
 in

@@ -48,11 +48,7 @@ in
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion =
-          cfg.roles.coturn
-          || cfg.roles.dashboard
-          || cfg.roles.management
-          || cfg.roles.signal;
+        assertion = cfg.roles.coturn || cfg.roles.dashboard || cfg.roles.management || cfg.roles.signal;
         message = "At least one NetBird role must be enabled when homestack.services.netbird.enable = true.";
       }
     ];
