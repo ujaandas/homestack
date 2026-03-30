@@ -1,23 +1,15 @@
 { config, lib, ... }:
 let
   cfg = config.homestack.host.hypervisor;
-  enabledVms = lib.filterAttrs (_: vm: vm.enable) cfg.vms;
+  hypervisorAddressing = import ../../lib/hypervisor-addressing.nix { inherit lib; };
 
-  vmHostEntries = lib.mapAttrs' (
-    name: vm:
-    lib.nameValuePair vm.networking.ip [
-      name
-      "${name}.vm"
-    ]
-  ) enabledVms;
-
-  vmSshAliases = lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (name: vm: ''
-      Host ${name} ${name}.vm
-        HostName ${vm.networking.ip}
-        User ${cfg.ssh.user}
-    '') enabledVms
-  );
+  enabledResolvedVms = hypervisorAddressing.mkResolvedEnabledVms cfg;
+  maxAutoHostId = hypervisorAddressing.mkMaxAutoHostId cfg;
+  vmHostEntries = hypervisorAddressing.mkHostEntries enabledResolvedVms;
+  vmSshAliases = hypervisorAddressing.mkSshAliases {
+    inherit enabledResolvedVms;
+    inherit (cfg.ssh) user;
+  };
 
   allServices = [
     ../services/postgres.nix
@@ -44,6 +36,26 @@ in
       };
     };
 
+    addressing = {
+      ipSubnet = lib.mkOption {
+        type = lib.types.str;
+        default = "192.168.100";
+        description = "IPv4 subnet prefix used for auto-generated VM addresses (without final host octet).";
+      };
+
+      ipHostStart = lib.mkOption {
+        type = lib.types.int;
+        default = 2;
+        description = "Starting host octet for auto-generated VM IPv4 addresses.";
+      };
+
+      macPrefix = lib.mkOption {
+        type = lib.types.str;
+        default = "02:00:00:00:00";
+        description = "MAC prefix used for auto-generated VM MAC addresses; final byte is auto-derived per VM.";
+      };
+    };
+
     vms = lib.mkOption {
       type = lib.types.attrsOf (
         lib.types.submodule (
@@ -64,14 +76,22 @@ in
               };
 
               networking = {
+                hostId = lib.mkOption {
+                  type = lib.types.nullOr lib.types.int;
+                  default = null;
+                  description = "Host octet (1-254) used for auto-generated IP/MAC for this VM; null uses sequential allocation.";
+                };
+
                 ip = lib.mkOption {
-                  type = lib.types.str;
-                  description = "Static IP for VM";
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "Static IPv4 address for VM; if null, one is auto-generated.";
                 };
 
                 mac = lib.mkOption {
-                  type = lib.types.str;
-                  default = "02:00:00:00:00:00";
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "MAC address for VM; if null, one is auto-generated.";
                 };
 
                 UDPPorts = lib.mkOption {
@@ -114,6 +134,20 @@ in
         assertion = config ? microvm;
         message = "microvm module must be imported when using homestack.host.hypervisor";
       }
+      {
+        assertion = cfg.addressing.ipHostStart >= 1;
+        message = "homestack.host.hypervisor.addressing.ipHostStart must be >= 1";
+      }
+      {
+        assertion = maxAutoHostId <= 254;
+        message = "Auto-generated VM IP host octets exceed 254; lower ipHostStart or reduce VM count.";
+      }
+      {
+        assertion = lib.all (
+          vm: vm.networking.hostId == null || (vm.networking.hostId >= 1 && vm.networking.hostId <= 254)
+        ) (builtins.attrValues cfg.vms);
+        message = "Each VM networking.hostId must be null or between 1 and 254.";
+      }
     ];
 
     networking.bridges.br0.interfaces = builtins.attrNames cfg.vms;
@@ -125,6 +159,9 @@ in
 
     microvm.vms = lib.mapAttrs (
       name: vm:
+      let
+        networkingValues = enabledResolvedVms.${name}.networking;
+      in
       lib.mkIf vm.enable {
         autostart = true;
         restartIfChanged = true;
@@ -156,7 +193,7 @@ in
               {
                 type = "tap";
                 id = name;
-                inherit (vm.networking) mac;
+                inherit (networkingValues) mac;
               }
             ];
           };
@@ -179,7 +216,7 @@ in
             networks."20-lan" = {
               matchConfig.Type = "ether";
               networkConfig = {
-                Address = [ "${vm.networking.ip}/24" ];
+                Address = [ "${networkingValues.ip}/24" ];
                 Gateway = config.homestack.host.networking.bridgeIp;
                 DNS = [
                   config.homestack.host.networking.bridgeIp

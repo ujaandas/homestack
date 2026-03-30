@@ -40,8 +40,7 @@
         db = {
           enable = true;
           networking = {
-            ip = "192.168.100.2";
-            mac = "02:00:00:00:00:01";
+            hostId = 2;
             TCPPorts = [
               22
               5432
@@ -58,8 +57,7 @@
             }
           ];
           networking = {
-            ip = "192.168.100.3";
-            mac = "02:00:00:00:00:02";
+            hostId = 3;
             TCPPorts = [
               22
               3000
@@ -76,8 +74,7 @@
             }
           ];
           networking = {
-            ip = "192.168.100.4";
-            mac = "02:00:00:00:00:03";
+            hostId = 4;
             TCPPorts = [
               22
               53
