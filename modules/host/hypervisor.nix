@@ -1,7 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.homestack.host.hypervisor;
-  allServices = [ ../services/postgres.nix ];
+  allServices = [ ../services/postgres.nix ../services/pocket-id.nix ];
 in
 {
   options.homestack.host.hypervisor = {

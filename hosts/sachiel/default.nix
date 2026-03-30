@@ -46,6 +46,19 @@
           };
           services.postgres.enable = true;
         };
+
+        auth = {
+          enable = true;
+          networking = {
+            ip = "192.168.100.3";
+            mac = "03:00:00:00:00:01";
+            TCPPorts = [
+              22
+              3000
+            ];
+          };
+          services.pocket-id.enable = true;
+        };
       };
     };
   };
