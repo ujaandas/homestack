@@ -1,6 +1,24 @@
 { config, lib, ... }:
 let
   cfg = config.homestack.host.hypervisor;
+  enabledVms = lib.filterAttrs (_: vm: vm.enable) cfg.vms;
+
+  vmHostEntries = lib.mapAttrs' (
+    name: vm:
+    lib.nameValuePair vm.networking.ip [
+      name
+      "${name}.vm"
+    ]
+  ) enabledVms;
+
+  vmSshAliases = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: vm: ''
+      Host ${name} ${name}.vm
+        HostName ${vm.networking.ip}
+        User ${cfg.ssh.user}
+    '') enabledVms
+  );
+
   allServices = [
     ../services/postgres.nix
     ../services/pocket-id.nix
@@ -11,6 +29,20 @@ in
 {
   options.homestack.host.hypervisor = {
     enable = lib.mkEnableOption "Enable and configure hypervisor capabilities for host.";
+
+    ssh = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Generate SSH client aliases and local hostnames for enabled microVMs.";
+      };
+
+      user = lib.mkOption {
+        type = lib.types.str;
+        default = "default";
+        description = "Default SSH username for auto-generated VM host aliases.";
+      };
+    };
 
     vms = lib.mkOption {
       type = lib.types.attrsOf (
@@ -85,6 +117,11 @@ in
     ];
 
     networking.bridges.br0.interfaces = builtins.attrNames cfg.vms;
+    networking.hosts = lib.mkIf cfg.ssh.enable vmHostEntries;
+
+    programs.ssh = lib.mkIf cfg.ssh.enable {
+      extraConfig = vmSshAliases;
+    };
 
     microvm.vms = lib.mapAttrs (
       name: vm:
