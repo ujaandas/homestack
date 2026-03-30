@@ -16,7 +16,7 @@ let
     ../../services/pocket-id.nix
     ../../services/caddy.nix
     ../../services/dnsmasq.nix
-    ../../services/netbird.nix
+    ../../services/netbird
   ];
 in
 {
