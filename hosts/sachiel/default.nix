@@ -91,6 +91,30 @@
             dnsmasq.enable = true;
           };
         }
+
+        {
+          name = "vpn";
+          enable = true;
+          credentialFiles = [
+            {
+              CLOUDFLARE_DNS_KEY = config.age.secrets.cloudflare_dns_key.path;
+              DATA_STORE_ENC_KEY = config.age.secrets.netbird_data_store_enc_key.path;
+              POCKETID_API_KEY = config.age.secrets.netbird_pocketid_api_key.path;
+              RELAY_KEY = config.age.secrets.netbird_relay_key.path;
+              TURN_KEY = config.age.secrets.netbird_turn_key.path;
+            }
+          ];
+          networking = {
+            TCPPorts = [
+              22
+              80
+              443
+            ];
+            UDPPorts = [ 3478 ];
+          };
+          hardware.size = 1024;
+          services.netbird.enable = true;
+        }
       ];
     };
   };
