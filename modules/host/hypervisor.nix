@@ -4,6 +4,8 @@ let
   allServices = [
     ../services/postgres.nix
     ../services/pocket-id.nix
+    ../services/caddy.nix
+    ../services/dnsmasq.nix
   ];
 in
 {

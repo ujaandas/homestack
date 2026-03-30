@@ -18,6 +18,7 @@
   ];
 
   secrets.pocketid_enc_key.enable = true;
+  secrets.cloudflare_dns_key.enable = true;
 
   # Base settings
   homestack.host = {
@@ -68,6 +69,30 @@
             ];
           };
           services.pocket-id.enable = true;
+        };
+
+        proxy = {
+          enable = true;
+          credentialFiles = [
+            {
+              CLOUDFLARE_DNS_KEY = config.age.secrets.cloudflare_dns_key.path;
+            }
+          ];
+          networking = {
+            ip = "192.168.100.4";
+            mac = "02:00:00:00:00:03";
+            TCPPorts = [
+              22
+              53
+              80
+              443
+            ];
+            UDPPorts = [ 53 ];
+          };
+          services = {
+            caddy.enable = true;
+            dnsmasq.enable = true;
+          };
         };
       };
     };
