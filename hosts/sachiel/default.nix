@@ -35,21 +35,21 @@
     # Hypervisor VM settings
     hypervisor = {
       enable = true;
-      vms = {
-
-        db = {
+      vms = [
+        {
+          name = "db";
           enable = true;
           networking = {
-            hostId = 2;
             TCPPorts = [
               22
               5432
             ];
           };
           services.postgres.enable = true;
-        };
+        }
 
-        auth = {
+        {
+          name = "auth";
           enable = true;
           credentialFiles = [
             {
@@ -57,16 +57,16 @@
             }
           ];
           networking = {
-            hostId = 3;
             TCPPorts = [
               22
               3000
             ];
           };
           services.pocket-id.enable = true;
-        };
+        }
 
-        proxy = {
+        {
+          name = "proxy";
           enable = true;
           credentialFiles = [
             {
@@ -74,7 +74,6 @@
             }
           ];
           networking = {
-            hostId = 4;
             TCPPorts = [
               22
               53
@@ -87,8 +86,8 @@
             caddy.enable = true;
             dnsmasq.enable = true;
           };
-        };
-      };
+        }
+      ];
     };
   };
 

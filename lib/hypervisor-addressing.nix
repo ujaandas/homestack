@@ -2,6 +2,17 @@
 rec {
   math = import ./math.nix;
 
+  mkVmNames = cfg: builtins.map (vm: vm.name) cfg.vms;
+
+  mkEnabledVmsByName =
+    cfg:
+    builtins.listToAttrs (
+      builtins.map (vm: {
+        inherit (vm) name;
+        value = vm;
+      }) (lib.filter (vm: vm.enable) cfg.vms)
+    );
+
   mkVmIndexMap =
     vmNames:
     builtins.listToAttrs (
@@ -62,9 +73,9 @@ rec {
   mkResolvedEnabledVms =
     cfg:
     let
-      vmNames = builtins.attrNames cfg.vms;
+      vmNames = mkVmNames cfg;
       vmIndexMap = mkVmIndexMap vmNames;
-      enabledVms = lib.filterAttrs (_: vm: vm.enable) cfg.vms;
+      enabledVms = mkEnabledVmsByName cfg;
     in
     lib.mapAttrs (
       name: vm:
@@ -100,6 +111,5 @@ rec {
       '') enabledResolvedVms
     );
 
-  mkMaxAutoHostId =
-    cfg: cfg.addressing.ipHostStart + (builtins.length (builtins.attrNames cfg.vms)) - 1;
+  mkMaxAutoHostId = cfg: cfg.addressing.ipHostStart + (builtins.length (mkVmNames cfg)) - 1;
 }

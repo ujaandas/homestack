@@ -2,6 +2,12 @@
 let
   cfg = config.homestack.host.hypervisor;
   hypervisorAddressing = import ../../lib/hypervisor-addressing.nix { inherit lib; };
+  vmsByName = builtins.listToAttrs (
+    builtins.map (vm: {
+      inherit (vm) name;
+      value = vm;
+    }) cfg.vms
+  );
 
   enabledResolvedVms = hypervisorAddressing.mkResolvedEnabledVms cfg;
   maxAutoHostId = hypervisorAddressing.mkMaxAutoHostId cfg;
@@ -57,12 +63,20 @@ in
     };
 
     vms = lib.mkOption {
-      type = lib.types.attrsOf (
+      type = lib.types.listOf (
         lib.types.submodule (
-          { name, ... }:
+          {
+            name,
+            ...
+          }:
           {
             options = {
-              enable = lib.mkEnableOption "Enable VM ${name}";
+              name = lib.mkOption {
+                type = lib.types.str;
+                description = "Name for this VM.";
+              };
+
+              enable = lib.mkEnableOption "Enable VM";
 
               services = lib.mkOption {
                 type = lib.types.attrs;
@@ -143,14 +157,18 @@ in
         message = "Auto-generated VM IP host octets exceed 254; lower ipHostStart or reduce VM count.";
       }
       {
+        assertion = lib.length (lib.unique (builtins.map (vm: vm.name) cfg.vms)) == lib.length cfg.vms;
+        message = "homestack.host.hypervisor.vms must not contain duplicate VM names.";
+      }
+      {
         assertion = lib.all (
           vm: vm.networking.hostId == null || (vm.networking.hostId >= 1 && vm.networking.hostId <= 254)
-        ) (builtins.attrValues cfg.vms);
+        ) cfg.vms;
         message = "Each VM networking.hostId must be null or between 1 and 254.";
       }
     ];
 
-    networking.bridges.br0.interfaces = builtins.attrNames cfg.vms;
+    networking.bridges.br0.interfaces = builtins.attrNames vmsByName;
     networking.hosts = lib.mkIf cfg.ssh.enable vmHostEntries;
 
     programs.ssh = lib.mkIf cfg.ssh.enable {
@@ -249,6 +267,6 @@ in
           system.stateVersion = "26.05";
         };
       }
-    ) cfg.vms;
+    ) vmsByName;
   };
 }
