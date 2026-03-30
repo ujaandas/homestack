@@ -42,6 +42,10 @@ in
         ) cfg.vms;
         message = "Each VM networking.hostId must be null or between 1 and 254.";
       }
+      {
+        assertion = cfg.ssh.allowPasswordAuthentication || cfg.ssh.authorizedKeys != [ ];
+        message = "Set homestack.host.hypervisor.ssh.authorizedKeys when password authentication is disabled.";
+      }
     ];
 
     networking.bridges.br0.interfaces = builtins.attrNames vmsByName;

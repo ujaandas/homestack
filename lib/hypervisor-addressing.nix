@@ -111,5 +111,10 @@ rec {
       '') enabledResolvedVms
     );
 
-  mkMaxAutoHostId = cfg: cfg.addressing.ipHostStart + (builtins.length (mkVmNames cfg)) - 1;
+  mkMaxAutoHostId =
+    cfg:
+    let
+      enabledVms = lib.filter (vm: vm.enable) cfg.vms;
+    in
+    cfg.addressing.ipHostStart + (builtins.length enabledVms) - 1;
 }

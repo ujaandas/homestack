@@ -6,9 +6,12 @@
 }:
 let
   cfg = config.homestack.services.dnsmasq;
-  domain = vmContext.domain or "ujaan.me";
-  vmIps = vmContext.vms or { };
-  proxyIp = if builtins.hasAttr "proxy" vmIps then vmIps.proxy.ip else "192.168.100.4";
+  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for dnsmasq") vmContext;
+  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for dnsmasq") vmContext;
+  proxyIp = lib.attrByPath [
+    "proxy"
+    "ip"
+  ] (throw "vmContext.vms.proxy.ip is required for dnsmasq") vmIps;
 in
 {
   options.homestack.services.dnsmasq = {

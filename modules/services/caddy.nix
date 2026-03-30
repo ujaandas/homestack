@@ -7,10 +7,11 @@
 }:
 let
   cfg = config.homestack.services.caddy;
-  domain = vmContext.domain or "ujaan.me";
-  vmIps = vmContext.vms or { };
-  authIp = if builtins.hasAttr "auth" vmIps then vmIps.auth.ip else "192.168.100.3";
-  vpnIp = if builtins.hasAttr "vpn" vmIps then vmIps.vpn.ip else "192.168.100.5";
+  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for caddy") vmContext;
+  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for caddy") vmContext;
+  authIp = lib.attrByPath [ "auth" "ip" ] (throw "vmContext.vms.auth.ip is required for caddy") vmIps;
+  vpnIp = lib.attrByPath [ "vpn" "ip" ] (throw "vmContext.vms.vpn.ip is required for caddy") vmIps;
+  contactEmail = lib.attrByPath [ "contact" "email" ] "ujaandas03@gmail.com" vmContext;
 in
 {
   options.homestack.services.caddy = {
@@ -24,7 +25,7 @@ in
         plugins = [ "github.com/caddy-dns/cloudflare@v0.2.2" ];
         hash = "sha256-ea8PC/+SlPRdEVVF/I3c1CBprlVp1nrumKM5cMwJJ3U=";
       };
-      email = "ujaandas03@gmail.com";
+      email = contactEmail;
       globalConfig = ''
         admin off
       '';

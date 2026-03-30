@@ -35,7 +35,10 @@
     # Hypervisor VM settings
     hypervisor = {
       enable = true;
-      context.domain = "ujaan.me";
+      context = {
+        domain = "ujaan.me";
+        contact.email = "ujaandas03@gmail.com";
+      };
       ssh.authorizedKeys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel"
       ];

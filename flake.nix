@@ -31,19 +31,6 @@
         };
     in
     {
-      nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
-        specialArgs = inputs // {
-          inherit username;
-          inherit system;
-        };
-        inherit system;
-        modules = [
-          agenix.nixosModules.default
-          microvm.nixosModules.host
-          ./hosts/vm
-        ];
-      };
-
       nixosConfigurations.sachiel = nixpkgs.lib.nixosSystem {
         specialArgs = inputs // {
           inherit username;

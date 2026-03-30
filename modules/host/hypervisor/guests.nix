@@ -25,6 +25,7 @@ in
       name: vm:
       let
         networkingValues = enabledResolvedVms.${name}.networking;
+        mergedCredentialFiles = lib.foldl' lib.recursiveUpdate { } vm.credentialFiles;
       in
       lib.mkIf vm.enable {
         autostart = true;
@@ -40,7 +41,7 @@ in
           imports = allServices;
           microvm = {
             inherit (vm.hardware) mem vcpu;
-            credentialFiles = lib.mkMerge vm.credentialFiles;
+            credentialFiles = mergedCredentialFiles;
 
             volumes = [
               {

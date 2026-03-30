@@ -7,10 +7,13 @@
 }:
 let
   cfg = config.homestack.services.pocket-id;
-  domain = vmContext.domain or "ujaan.me";
-  vmIps = vmContext.vms or { };
-  authIp = if builtins.hasAttr "auth" vmIps then vmIps.auth.ip else "192.168.100.3";
-  dbIp = if builtins.hasAttr "db" vmIps then vmIps.db.ip else "192.168.100.2";
+  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for pocket-id") vmContext;
+  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for pocket-id") vmContext;
+  authIp = lib.attrByPath [
+    "auth"
+    "ip"
+  ] (throw "vmContext.vms.auth.ip is required for pocket-id") vmIps;
+  dbIp = lib.attrByPath [ "db" "ip" ] (throw "vmContext.vms.db.ip is required for pocket-id") vmIps;
 in
 {
   options.homestack.services.pocket-id = {

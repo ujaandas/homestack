@@ -7,9 +7,13 @@
 }:
 let
   cfg = config.homestack.services.netbird;
-  domain = vmContext.domain or "ujaan.me";
-  vmIps = vmContext.vms or { };
-  proxyIp = if builtins.hasAttr "proxy" vmIps then vmIps.proxy.ip else "192.168.100.4";
+  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for netbird") vmContext;
+  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for netbird") vmContext;
+  proxyIp = lib.attrByPath [
+    "proxy"
+    "ip"
+  ] (throw "vmContext.vms.proxy.ip is required for netbird") vmIps;
+  contactEmail = lib.attrByPath [ "contact" "email" ] "ujaandas03@gmail.com" vmContext;
   pocketIdUrl = "https://pocketid.${domain}";
   netbirdDomain = "netbird.${domain}";
   clientId = "4716b464-7a15-4e06-aadd-b985650f2cba";
@@ -142,7 +146,6 @@ in
             sha256 = "sha256-Q7lfXHQYr0qdT/gAOei4YF0ojwPfmN4Rp8J3zZwv938=";
           };
           vendorHash = "sha256-b3Wl9jsAdYC91JM/kDo4yIF05hqbivtrcn1aRuZzP3s=";
-          vendorSha256 = "";
         });
       })
     ];
@@ -150,7 +153,7 @@ in
     security.acme = {
       acceptTerms = true;
       defaults = {
-        email = "ujaandas03@gmail.com";
+        email = contactEmail;
         dnsResolver = proxyIp;
       };
       certs."${netbirdDomain}" = {
