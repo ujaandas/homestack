@@ -56,7 +56,7 @@
           enable = true;
           credentialFiles = [
             {
-              POCKETID_ENC_KEY = "/run/agenix/pocketid_enc_key";
+              POCKETID_ENC_KEY = config.age.secrets.pocketid_enc_key.path;
             }
           ];
           networking = {

@@ -22,7 +22,7 @@ in
         TRUST_PROXY = true;
         ANALYTICS_DISABLED = true;
         DB_PROVIDER = "postgres";
-        DB_CONNECTION = "postgresql://pocketid@192.168.100.2:5432/pocketid";
+        DB_CONNECTION_STRING = "postgresql://pocketid@192.168.100.2:5432/pocketid";
         KEYS_STORAGE = "database";
       };
     };
