@@ -9,10 +9,6 @@
 let
   domain = "ujaan.me";
   contactEmail = "ujaandas03@gmail.com";
-  subnet = "192.168.100";
-  vmIp = hostId: "${subnet}.${toString hostId}";
-  relayProxyHostId = 10;
-  relayTunnelHostId = 20;
 in
 {
   imports = [
@@ -21,8 +17,8 @@ in
     ./disk-config.nix
     ../../secrets
     ../../modules/host/base.nix
-    ../../modules/host/networking.nix
-    ../../modules/host/hypervisor.nix
+    ../../modules/services/caddy.nix
+    ../../modules/services/wireguard.nix
   ];
 
   boot.loader.grub = {
@@ -42,84 +38,47 @@ in
     extraGroups = ["wheel" "networkmanager"];
   };
 
-  homestack.host = {
-    base = {
+  homestack.host.base = {
+    enable = true;
+    hostname = "cloud-relay";
+  };
+
+  homestack.services = {
+    caddy = {
       enable = true;
-      hostname = "cloud-relay";
+      inherit domain contactEmail;
+      upstreams = {
+        pocketid = "10.77.0.2:3000";
+        netbird = "10.77.0.2";
+      };
     };
 
-    networking = {
+    wireguard = {
       enable = true;
-      externalInterface = "eth0";
-      bridgeIp = "192.168.100.1";
-    };
+      interfaceName = "wg0";
+      address = "10.77.0.1/24";
+      listenPort = 51820;
+      privateKeyFile = "/var/lib/wireguard/relay.key";
+      peer = {
+        publicKey = "REPLACE_WITH_LOCAL_HOST_WIREGUARD_PUBLIC_KEY";
+        allowedIPs = [ "10.77.0.2/32" ];
+        persistentKeepalive = 25;
+      };
 
-    hypervisor = {
-      enable = true;
-
-      ssh.authorizedKeys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@cloud-relay"
-      ];
-      
-      vms = [
-        {
-          name = "relay-proxy";
-          enable = true;
-          networking = {
-            hostId = relayProxyHostId;
-            TCPPorts = [
-              22
-              80
-              443
-            ];
-          };
-          services.caddy = {
-            enable = true;
-            inherit domain contactEmail;
-            upstreams = {
-              pocketid = "${vmIp relayTunnelHostId}:3000";
-              netbird = "${vmIp relayTunnelHostId}";
-            };
-          };
-        }
-
-        {
-          name = "relay-tunnel";
-          enable = true;
-          networking = {
-            hostId = relayTunnelHostId;
-            TCPPorts = [
-              22
-              443
-              3000
-            ];
-            UDPPorts = [ 51820 ];
-          };
-          services.wireguard = {
-            enable = true;
-            interfaceName = "wg0";
-            address = "10.77.0.1/24";
-            listenPort = 51820;
-            privateKeyFile = "/var/lib/wireguard/relay.key";
-            peer = {
-              publicKey = "REPLACE_WITH_LOCAL_HOST_WIREGUARD_PUBLIC_KEY";
-              allowedIPs = [ "10.77.0.2/32" ];
-              persistentKeepalive = 25;
-            };
-
-            relay = {
-              enable = true;
-              peerAddress = "10.77.0.2";
-              tcpPorts = [
-                3000
-                443
-              ];
-            };
-          };
-        }
-      ];
+      relay = {
+        enable = true;
+        peerAddress = "10.77.0.2";
+        # Keep host HTTPS free for Caddy; relay only app traffic over WireGuard.
+        tcpPorts = [ 3000 ];
+      };
     };
   };
+
+  # In VM mode this credential was injected via microvm.credentialFiles.
+  # On host mode we bind the agenix secret directly into Caddy's credentials dir.
+  systemd.services.caddy.serviceConfig.LoadCredential = lib.mkForce [
+    "CLOUDFLARE_DNS_KEY:${config.age.secrets.cloudflare_dns_key.path}"
+  ];
 
   system.stateVersion = "25.05";
 }
