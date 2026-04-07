@@ -44,18 +44,18 @@
         ];
       };
 
-      nixosConfigurations.cloud-relay = nixpkgs.lib.nixosSystem {
-        specialArgs = inputs // {
-          inherit username;
-          inherit system;
-        };
-        inherit system;
-        modules = [
-          agenix.nixosModules.default
-          microvm.nixosModules.host
-          ./hosts/cloud-relay
-        ];
-      };
+      # nixosConfigurations.cloud-relay = nixpkgs.lib.nixosSystem {
+      #   specialArgs = inputs // {
+      #     inherit username;
+      #     inherit system;
+      #   };
+      #   inherit system;
+      #   modules = [
+      #     agenix.nixosModules.default
+      #     microvm.nixosModules.host
+      #     ./hosts/cloud-relay
+      #   ];
+      # };
 
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = [

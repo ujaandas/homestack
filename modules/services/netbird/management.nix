@@ -2,17 +2,12 @@
   lib,
   config,
   pkgs,
-  vmContext ? { },
   ...
 }:
 let
   cfg = config.homestack.services.netbird;
-  domain = lib.attrByPath [
-    "domain"
-  ] (throw "vmContext.domain is required for netbird management") vmContext;
-  pocketIdUrl = "https://pocketid.${domain}";
-  netbirdDomain = "netbird.${domain}";
-  clientId = lib.attrByPath [ "netbird" "clientId" ] "4716b464-7a15-4e06-aadd-b985650f2cba" vmContext;
+  pocketIdUrl = "https://pocketid.${cfg.domain}";
+  netbirdDomain = "netbird.${cfg.domain}";
 in
 {
   config = lib.mkIf (cfg.enable && cfg.roles.management) {
@@ -27,7 +22,7 @@ in
         Signal.URI = "${netbirdDomain}:443";
 
         HttpConfig = {
-          AuthAudience = clientId;
+          AuthAudience = cfg.clientId;
           IdpSignKeyRefreshEnabled = true;
         };
 
@@ -54,8 +49,8 @@ in
         };
 
         PKCEAuthorizationFlow.ProviderConfig = {
-          Audience = clientId;
-          ClientID = clientId;
+          Audience = cfg.clientId;
+          ClientID = cfg.clientId;
         };
 
         TURNConfig = {

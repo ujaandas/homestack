@@ -2,35 +2,42 @@
   lib,
   config,
   pkgs,
-  vmContext ? { },
   ...
 }:
 let
   cfg = config.homestack.services.pocket-id;
-  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for pocket-id") vmContext;
-  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for pocket-id") vmContext;
-  authIp = lib.attrByPath [
-    "auth"
-    "ip"
-  ] (throw "vmContext.vms.auth.ip is required for pocket-id") vmIps;
-  dbIp = lib.attrByPath [ "db" "ip" ] (throw "vmContext.vms.db.ip is required for pocket-id") vmIps;
 in
 {
   options.homestack.services.pocket-id = {
     enable = lib.mkEnableOption "Enable sane Pocket-ID service.";
+
+    domain = lib.mkOption {
+      type = lib.types.str;
+      description = "Base domain used for Pocket-ID public URL.";
+    };
+
+    authIp = lib.mkOption {
+      type = lib.types.str;
+      description = "IP address Pocket-ID should bind to inside the VM.";
+    };
+
+    dbIp = lib.mkOption {
+      type = lib.types.str;
+      description = "IP address of the PostgreSQL VM used by Pocket-ID.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
     services.pocket-id = {
       enable = true;
       settings = {
-        APP_URL = "https://pocketid.${domain}";
-        HOST = authIp;
+        APP_URL = "https://pocketid.${cfg.domain}";
+        HOST = cfg.authIp;
         PORT = 3000;
         TRUST_PROXY = true;
         ANALYTICS_DISABLED = true;
         DB_PROVIDER = "postgres";
-        DB_CONNECTION_STRING = "postgresql://pocketid@${dbIp}:5432/pocketid";
+        DB_CONNECTION_STRING = "postgresql://pocketid@${cfg.dbIp}:5432/pocketid";
         KEYS_STORAGE = "database";
       };
     };

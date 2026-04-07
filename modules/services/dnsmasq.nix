@@ -1,33 +1,36 @@
 {
   lib,
   config,
-  vmContext ? { },
   ...
 }:
 let
   cfg = config.homestack.services.dnsmasq;
-  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for dnsmasq") vmContext;
-  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for dnsmasq") vmContext;
-  proxyIp = lib.attrByPath [
-    "proxy"
-    "ip"
-  ] (throw "vmContext.vms.proxy.ip is required for dnsmasq") vmIps;
 in
 {
   options.homestack.services.dnsmasq = {
     enable = lib.mkEnableOption "Enable Dnsmasq resolver for homestack.";
+
+    domain = lib.mkOption {
+      type = lib.types.str;
+      description = "Base domain used for homestack DNS records.";
+    };
+
+    proxyIp = lib.mkOption {
+      type = lib.types.str;
+      description = "IP address to answer for homestack DNS records.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
     services.dnsmasq = {
       enable = true;
       settings = {
-        listen-address = proxyIp;
+        listen-address = cfg.proxyIp;
         bind-interfaces = true;
         server = [ "1.1.1.1" ];
         address = [
-          "/pocketid.${domain}/${proxyIp}"
-          "/netbird.${domain}/${proxyIp}"
+          "/pocketid.${cfg.domain}/${cfg.proxyIp}"
+          "/netbird.${cfg.domain}/${cfg.proxyIp}"
         ];
       };
     };

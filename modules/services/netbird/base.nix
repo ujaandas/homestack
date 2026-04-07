@@ -1,19 +1,11 @@
 {
   lib,
   config,
-  vmContext ? { },
   ...
 }:
 let
   cfg = config.homestack.services.netbird;
-  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for netbird") vmContext;
-  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for netbird") vmContext;
-  proxyIp = lib.attrByPath [
-    "proxy"
-    "ip"
-  ] (throw "vmContext.vms.proxy.ip is required for netbird") vmIps;
-  contactEmail = lib.attrByPath [ "contact" "email" ] "ujaandas03@gmail.com" vmContext;
-  netbirdDomain = "netbird.${domain}";
+  netbirdDomain = "netbird.${cfg.domain}";
 in
 {
   config = lib.mkIf cfg.enable {
@@ -24,13 +16,6 @@ in
         enable = true;
         enableNginx = true;
         domain = netbirdDomain;
-      };
-
-      resolved = {
-        enable = true;
-        dnssec = "allow-downgrade";
-        fallbackDns = [ ];
-        domains = [ "~." ];
       };
     };
 
@@ -51,8 +36,8 @@ in
     security.acme = {
       acceptTerms = true;
       defaults = {
-        email = contactEmail;
-        dnsResolver = proxyIp;
+        email = cfg.contactEmail;
+        dnsResolver = cfg.proxyIp;
       };
       certs."${netbirdDomain}" = {
         dnsProvider = "cloudflare";
@@ -71,7 +56,7 @@ in
     };
 
     networking = {
-      nameservers = [ proxyIp ];
+      nameservers = [ cfg.proxyIp ];
       useHostResolvConf = false;
     };
   };

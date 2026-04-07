@@ -5,13 +5,11 @@
 }:
 let
   cfg = config.homestack.services.wireguard;
-  relayForwardPorts = builtins.map (
-    port: {
-      proto = "tcp";
-      sourcePort = port;
-      destination = "${cfg.relay.peerAddress}:${toString port}";
-    }
-  ) cfg.relay.tcpPorts;
+  relayForwardPorts = builtins.map (port: {
+    proto = "tcp";
+    sourcePort = port;
+    destination = "${cfg.relay.peerAddress}:${toString port}";
+  }) cfg.relay.tcpPorts;
 in
 {
   options.homestack.services.wireguard = {
@@ -102,14 +100,15 @@ in
 
       wireguard.interfaces.${cfg.interfaceName} = {
         ips = [ cfg.address ];
-        listenPort = cfg.listenPort;
-        privateKeyFile = cfg.privateKeyFile;
+        inherit (cfg) listenPort privateKeyFile;
         peers = [
           {
-            publicKey = cfg.peer.publicKey;
-            allowedIPs = cfg.peer.allowedIPs;
-            endpoint = cfg.peer.endpoint;
-            persistentKeepalive = cfg.peer.persistentKeepalive;
+            inherit (cfg.peer)
+              persistentKeepalive
+              endpoint
+              allowedIPs
+              publicKey
+              ;
           }
         ];
       };

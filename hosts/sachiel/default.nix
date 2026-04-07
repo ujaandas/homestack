@@ -6,6 +6,19 @@
   agenix,
   ...
 }:
+let
+  domain = "ujaan.me";
+  contactEmail = "ujaandas03@gmail.com";
+  subnet = "192.168.100";
+  vmIp = hostId: "${subnet}.${toString hostId}";
+
+  vmHostIds = {
+    db = 2;
+    auth = 3;
+    proxy = 4;
+    vpn = 5;
+  };
+in
 
 # Sachiel, the hypervisor
 {
@@ -35,10 +48,6 @@
     # Hypervisor VM settings
     hypervisor = {
       enable = true;
-      context = {
-        domain = "ujaan.me";
-        contact.email = "ujaandas03@gmail.com";
-      };
       ssh.authorizedKeys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel"
       ];
@@ -47,6 +56,7 @@
           name = "db";
           enable = true;
           networking = {
+            hostId = vmHostIds.db;
             TCPPorts = [
               22
               5432
@@ -64,12 +74,18 @@
             }
           ];
           networking = {
+            hostId = vmHostIds.auth;
             TCPPorts = [
               22
               3000
             ];
           };
-          services.pocket-id.enable = true;
+          services.pocket-id = {
+            enable = true;
+            inherit domain;
+            authIp = vmIp vmHostIds.auth;
+            dbIp = vmIp vmHostIds.db;
+          };
         }
 
         {
@@ -81,6 +97,7 @@
             }
           ];
           networking = {
+            hostId = vmHostIds.proxy;
             TCPPorts = [
               22
               53
@@ -90,8 +107,20 @@
             UDPPorts = [ 53 ];
           };
           services = {
-            caddy.enable = true;
-            dnsmasq.enable = true;
+            caddy = {
+              enable = true;
+              inherit domain contactEmail;
+              upstreams = {
+                pocketid = "${vmIp vmHostIds.auth}:3000";
+                netbird = "${vmIp vmHostIds.vpn}";
+              };
+            };
+
+            dnsmasq = {
+              enable = true;
+              inherit domain;
+              proxyIp = vmIp vmHostIds.proxy;
+            };
           };
         }
 
@@ -108,6 +137,7 @@
             }
           ];
           networking = {
+            hostId = vmHostIds.vpn;
             TCPPorts = [
               22
               80
@@ -116,7 +146,11 @@
             UDPPorts = [ 3478 ];
           };
           hardware.size = 1024;
-          services.netbird.enable = true;
+          services.netbird = {
+            enable = true;
+            inherit domain contactEmail;
+            proxyIp = vmIp vmHostIds.proxy;
+          };
         }
       ];
     };

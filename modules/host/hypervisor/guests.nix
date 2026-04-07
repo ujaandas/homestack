@@ -33,12 +33,6 @@ in
         restartIfChanged = true;
 
         config = {
-          _module.args.vmContext = lib.recursiveUpdate (lib.recursiveUpdate cfg.context vm.context) {
-            currentVm = name;
-            inherit (config.homestack.host.networking) bridgeIp;
-            vms = lib.mapAttrs (_: resolvedVm: resolvedVm.networking) enabledResolvedVms;
-          };
-
           imports = allServices;
           microvm = {
             inherit (vm.hardware) mem vcpu;

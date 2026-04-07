@@ -1,4 +1,11 @@
-{ ... }:
+let
+  domain = "ujaan.me";
+  contactEmail = "ujaandas03@gmail.com";
+  subnet = "192.168.100";
+  vmIp = hostId: "${subnet}.${toString hostId}";
+  relayProxyHostId = 10;
+  relayTunnelHostId = 20;
+in
 {
   imports = [
     ../../secrets
@@ -22,15 +29,6 @@
 
     hypervisor = {
       enable = true;
-      context = {
-        domain = "ujaan.me";
-        contact.email = "ujaandas03@gmail.com";
-
-        caddy.upstreams = {
-          pocketid = "192.168.100.20:3000";
-          netbird = "192.168.100.20:443";
-        };
-      };
 
       ssh.authorizedKeys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@cloud-relay"
@@ -40,21 +38,28 @@
           name = "relay-proxy";
           enable = true;
           networking = {
-            hostId = 10;
+            hostId = relayProxyHostId;
             TCPPorts = [
               22
               80
               443
             ];
           };
-          services.caddy.enable = true;
+          services.caddy = {
+            enable = true;
+            inherit domain contactEmail;
+            upstreams = {
+              pocketid = "${vmIp relayTunnelHostId}:3000";
+              netbird = "${vmIp relayTunnelHostId}:443";
+            };
+          };
         }
 
         {
           name = "relay-tunnel";
           enable = true;
           networking = {
-            hostId = 20;
+            hostId = relayTunnelHostId;
             TCPPorts = [
               22
               443
