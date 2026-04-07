@@ -1,6 +1,7 @@
 let
   homelab-sachiel = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel";
   homelab-root = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGjAWoqQYGYE9OsJTTYesDt1xm89rVSMVZUiW07UWsvI root@nixos";
+  cloud-relay = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdU1jVIwdDlO/qUTC3OdIlnYzMPMQT0LZC9+1Wyxv2t default@cloud-relay";
 in
 {
   "pocketid_enc_key.age".publicKeys = [
@@ -10,6 +11,7 @@ in
   "cloudflare_dns_key.age".publicKeys = [
     homelab-sachiel
     homelab-root
+    cloud-relay
   ];
   "netbird_pocketid_api_key.age".publicKeys = [
     homelab-sachiel
@@ -24,6 +26,15 @@ in
     homelab-root
   ];
   "netbird_data_store_enc_key.age".publicKeys = [
+    homelab-sachiel
+    homelab-root
+  ];
+  "wireguard_ingress_key.age".publicKeys = [
+    homelab-sachiel
+    homelab-root
+    cloud-relay
+  ];
+  "wireguard_egress_key.age".publicKeys = [
     homelab-sachiel
     homelab-root
   ];
