@@ -7,11 +7,45 @@
 }:
 let
   cfg = config.homestack.services.caddy;
-  domain = lib.attrByPath [ "domain" ] (throw "vmContext.domain is required for caddy") vmContext;
-  vmIps = lib.attrByPath [ "vms" ] (throw "vmContext.vms is required for caddy") vmContext;
-  authIp = lib.attrByPath [ "auth" "ip" ] (throw "vmContext.vms.auth.ip is required for caddy") vmIps;
-  vpnIp = lib.attrByPath [ "vpn" "ip" ] (throw "vmContext.vms.vpn.ip is required for caddy") vmIps;
-  contactEmail = lib.attrByPath [ "contact" "email" ] "ujaandas03@gmail.com" vmContext;
+  context =
+    if vmContext ? domain then
+      vmContext
+    else
+      lib.attrByPath [ "homestack" "host" "hypervisor" "context" ] { } config;
+  domain = lib.attrByPath [ "domain" ] (throw "caddy needs a domain in vmContext or homestack.host.hypervisor.context") context;
+  contactEmail = lib.attrByPath [ "contact" "email" ] (
+    throw "caddy needs contact.email in vmContext or homestack.host.hypervisor.context"
+  ) context;
+  caddyContext = lib.attrByPath [ "caddy" ] { } context;
+  upstreams = {
+    pocketid = lib.attrByPath [ "upstreams" "pocketid" ] (
+      lib.attrByPath [ "vms" "auth" "ip" ] (
+        throw "caddy needs caddy.upstreams.pocketid or vms.auth.ip in the active context"
+      ) context
+    ) caddyContext;
+
+    netbird = lib.attrByPath [ "upstreams" "netbird" ] (
+      lib.attrByPath [ "vms" "vpn" "ip" ] (
+        throw "caddy needs caddy.upstreams.netbird or vms.vpn.ip in the active context"
+      ) context
+    ) caddyContext;
+  };
+
+  defaultVirtualHosts = {
+    "*.${domain}".extraConfig = ''
+      tls {
+        dns cloudflare {file.{$CLOUDFLARE_API_KEY}}
+      }
+    '';
+
+    "pocketid.${domain}".extraConfig = ''
+      reverse_proxy ${upstreams.pocketid}
+    '';
+
+    "netbird.${domain}".extraConfig = ''
+      reverse_proxy ${upstreams.netbird}
+    '';
+  };
 in
 {
   options.homestack.services.caddy = {
@@ -29,21 +63,7 @@ in
       globalConfig = ''
         admin off
       '';
-      virtualHosts = {
-        "*.${domain}".extraConfig = ''
-          tls {
-            dns cloudflare {file.{$CLOUDFLARE_API_KEY}}
-          }
-        '';
-
-        "pocketid.${domain}".extraConfig = ''
-          reverse_proxy ${authIp}:3000
-        '';
-
-        "netbird.${domain}".extraConfig = ''
-          reverse_proxy ${vpnIp}
-        '';
-      };
+      virtualHosts = defaultVirtualHosts // lib.attrByPath [ "virtualHosts" ] { } caddyContext;
     };
 
     systemd.services.caddy.serviceConfig = {

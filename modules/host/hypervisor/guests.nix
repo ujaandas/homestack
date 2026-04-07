@@ -15,6 +15,7 @@ let
     ../../services/postgres.nix
     ../../services/pocket-id.nix
     ../../services/caddy.nix
+    ../../services/wireguard.nix
     ../../services/dnsmasq.nix
     ../../services/netbird
   ];
