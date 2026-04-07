@@ -1,7 +1,7 @@
 let
   homelab-sachiel = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel";
   homelab-root = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGjAWoqQYGYE9OsJTTYesDt1xm89rVSMVZUiW07UWsvI root@nixos";
-  cloud-relay = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFdU1jVIwdDlO/qUTC3OdIlnYzMPMQT0LZC9+1Wyxv2t default@cloud-relay";
+  cloud-relay = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBQa8WNmMjMFCGxOudINN03z3i+8py92MmycWRmim6lQ root@cloud-relay";
 in
 {
   "pocketid_enc_key.age".publicKeys = [
