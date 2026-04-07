@@ -9,6 +9,7 @@
 let
   domain = "ujaan.me";
   contactEmail = "ujaandas03@gmail.com";
+  cloudRelayEndpoint = "204.168.141.116:51820";
   subnet = "192.168.100";
   vmIp = hostId: "${subnet}.${toString hostId}";
 
@@ -17,6 +18,7 @@ let
     auth = 3;
     proxy = 4;
     vpn = 5;
+    egress = 6;
   };
 in
 
@@ -150,6 +152,35 @@ in
             enable = true;
             inherit domain contactEmail;
             proxyIp = vmIp vmHostIds.proxy;
+          };
+        }
+
+        {
+          name = "egress";
+          enable = true;
+          credentialFiles = [
+            {
+              WG_EGRESS_PRIV_KEY = config.age.secrets.wireguard_egress_key.path;
+            }
+          ];
+          networking = {
+            hostId = vmHostIds.egress;
+            TCPPorts = [ 22 ];
+          };
+          services.wireguard = {
+            enable = true;
+            interfaceName = "wg0";
+            address = "10.77.0.2/24";
+            privateKeyFile = "WG_EGRESS_PRIV_KEY";
+            peer = {
+              publicKey = "hekhMcqcBeJbwScN51soaO1/BjVIhA2eBDPN5/Pt5Wg=";
+              endpoint = cloudRelayEndpoint;
+              allowedIPs = [
+                "0.0.0.0/0"
+                "::/0"
+              ];
+              persistentKeepalive = 25;
+            };
           };
         }
       ];

@@ -29,13 +29,22 @@ in
   # Force GRUB and avoid inheriting systemd-boot from shared host defaults.
   boot.loader.systemd-boot.enable = lib.mkForce false;
 
+  nix.settings = {
+    trusted-public-keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel"
+    ];
+  };
+
   users.users.default = {
     isNormalUser = true;
     initialPassword = "password";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel"
     ];
-    extraGroups = ["wheel" "networkmanager"];
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+    ];
   };
 
   homestack.host.base = {
@@ -58,15 +67,16 @@ in
       interfaceName = "wg0";
       address = "10.77.0.1/24";
       listenPort = 51820;
-      privateKeyFile = "/var/lib/wireguard/relay.key";
+      privateKeyFile = config.age.secrets.wireguard_ingress_key.path;
       peer = {
-        publicKey = "REPLACE_WITH_LOCAL_HOST_WIREGUARD_PUBLIC_KEY";
+        publicKey = "HOVgj99NRFC6bYNmR+bxJuRleX1VOvvWgDlCJQLmRQs=";
         allowedIPs = [ "10.77.0.2/32" ];
         persistentKeepalive = 25;
       };
 
       relay = {
         enable = true;
+        externalInterface = "eth0";
         peerAddress = "10.77.0.2";
         # Keep host HTTPS free for Caddy; relay only app traffic over WireGuard.
         tcpPorts = [ 3000 ];
@@ -74,8 +84,6 @@ in
     };
   };
 
-  # In VM mode this credential was injected via microvm.credentialFiles.
-  # On host mode we bind the agenix secret directly into Caddy's credentials dir.
   systemd.services.caddy.serviceConfig.LoadCredential = lib.mkForce [
     "CLOUDFLARE_DNS_KEY:${config.age.secrets.cloudflare_dns_key.path}"
   ];

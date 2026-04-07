@@ -70,6 +70,12 @@ in
         description = "Enable simple TCP relay forwarding to the WireGuard peer.";
       };
 
+      externalInterface = lib.mkOption {
+        type = lib.types.str;
+        default = "eth0";
+        description = "External interface used for NAT when relay mode is enabled.";
+      };
+
       peerAddress = lib.mkOption {
         type = lib.types.str;
         default = "10.77.0.2";
@@ -115,7 +121,8 @@ in
 
       nat = lib.mkIf cfg.relay.enable {
         enable = true;
-        externalInterface = "eth0";
+        inherit (cfg.relay) externalInterface;
+        internalInterfaces = [ cfg.interfaceName ];
         forwardPorts = relayForwardPorts;
       };
     };
