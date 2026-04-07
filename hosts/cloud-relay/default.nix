@@ -47,39 +47,47 @@ in
     ];
   };
 
-  homestack.host.base = {
-    enable = true;
-    hostname = "cloud-relay";
-  };
-
-  homestack.services = {
-    caddy = {
-      enable = true;
-      inherit domain contactEmail;
-      upstreams = {
-        pocketid = "10.77.0.2:3000";
-        netbird = "10.77.0.2";
+  homestack = {
+    host = {
+      base = {
+        enable = true;
+        hostname = "cloud-relay";
       };
+      secrets.enabledNames = [
+        "cloudflare_dns_key"
+        "wireguard_ingress_key"
+      ];
     };
 
-    wireguard = {
-      enable = true;
-      interfaceName = "wg0";
-      address = "10.77.0.1/24";
-      listenPort = 51820;
-      privateKeyFile = config.age.secrets.wireguard_ingress_key.path;
-      peer = {
-        publicKey = "HOVgj99NRFC6bYNmR+bxJuRleX1VOvvWgDlCJQLmRQs=";
-        allowedIPs = [ "10.77.0.2/32" ];
-        persistentKeepalive = 25;
+    services = {
+      caddy = {
+        enable = true;
+        inherit domain contactEmail;
+        upstreams = {
+          pocketid = "10.77.0.2:3000";
+          netbird = "10.77.0.2";
+        };
       };
 
-      relay = {
+      wireguard = {
         enable = true;
-        externalInterface = "eth0";
-        peerAddress = "10.77.0.2";
-        # Keep host HTTPS free for Caddy; relay only app traffic over WireGuard.
-        tcpPorts = [ 3000 ];
+        interfaceName = "wg0";
+        address = "10.77.0.1/24";
+        listenPort = 51820;
+        privateKeyFile = config.age.secrets.wireguard_ingress_key.path;
+        peer = {
+          publicKey = "HOVgj99NRFC6bYNmR+bxJuRleX1VOvvWgDlCJQLmRQs=";
+          allowedIPs = [ "10.77.0.2/32" ];
+          persistentKeepalive = 25;
+        };
+
+        relay = {
+          enable = true;
+          externalInterface = "eth0";
+          peerAddress = "10.77.0.2";
+          # Keep host HTTPS free for Caddy; relay only app traffic over WireGuard.
+          tcpPorts = [ 3000 ];
+        };
       };
     };
   };

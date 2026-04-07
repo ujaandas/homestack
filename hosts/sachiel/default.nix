@@ -40,6 +40,16 @@ in
       nixLdEnabled = true;
     };
 
+    secrets.enabledNames = [
+      "cloudflare_dns_key"
+      "netbird_data_store_enc_key"
+      "netbird_pocketid_api_key"
+      "netbird_relay_key"
+      "netbird_turn_key"
+      "pocketid_enc_key"
+      "wireguard_egress_key"
+    ];
+
     # Hypervisor network settings
     networking = {
       enable = true;
