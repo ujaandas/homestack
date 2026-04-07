@@ -29,3 +29,4 @@ Traffic is routed through a tiered virtual network:
 2. Resolution: Internal Dnsmasq intercepts \*.ujaan.me requests, resolving them to internal bridge IPs (192.168.100.x)
 3. Encryption: Caddy manages wildcard certificates via Cloudflare DNS-01 challenges, allowing for valid HTTPS on internal-only IPs
 
+## 

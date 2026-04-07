@@ -1,3 +1,11 @@
+{
+  modulesPath,
+  config,
+  system,
+  lib,
+  pkgs,
+  ...
+}:
 let
   domain = "ujaan.me";
   contactEmail = "ujaandas03@gmail.com";
@@ -8,17 +16,36 @@ let
 in
 {
   imports = [
+    (modulesPath + "/profiles/qemu-guest.nix")
+    (modulesPath + "/installer/scan/not-detected.nix")
+    ./disk-config.nix
     ../../secrets
     ../../modules/host/base.nix
     ../../modules/host/networking.nix
     ../../modules/host/hypervisor.nix
   ];
 
+  boot.loader.grub = {
+    enable = true;
+  };
+
+  # This host is provisioned on Hetzner where firmware mode can vary.
+  # Force GRUB and avoid inheriting systemd-boot from shared host defaults.
+  boot.loader.systemd-boot.enable = lib.mkForce false;
+
+  users.users.default = {
+    isNormalUser = true;
+    initialPassword = "password";
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel"
+    ];
+    extraGroups = ["wheel" "networkmanager"];
+  };
+
   homestack.host = {
     base = {
       enable = true;
       hostname = "cloud-relay";
-      nixLdEnabled = true;
     };
 
     networking = {
@@ -33,6 +60,7 @@ in
       ssh.authorizedKeys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@cloud-relay"
       ];
+      
       vms = [
         {
           name = "relay-proxy";
@@ -50,7 +78,7 @@ in
             inherit domain contactEmail;
             upstreams = {
               pocketid = "${vmIp relayTunnelHostId}:3000";
-              netbird = "${vmIp relayTunnelHostId}:443";
+              netbird = "${vmIp relayTunnelHostId}";
             };
           };
         }

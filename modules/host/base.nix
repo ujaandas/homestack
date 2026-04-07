@@ -103,6 +103,7 @@ in
     environment.systemPackages =
       with pkgs;
       [
+        curl
         vim
         tmux
         git
