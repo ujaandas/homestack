@@ -29,12 +29,6 @@ in
   # Force GRUB and avoid inheriting systemd-boot from shared host defaults.
   boot.loader.systemd-boot.enable = lib.mkForce false;
 
-  nix.settings = {
-    trusted-public-keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0qzwBbh1pvVIbliC0PnBVJkcdLYJhFEljw95Zre1i0 default@sachiel"
-    ];
-  };
-
   users.users.default = {
     isNormalUser = true;
     initialPassword = "password";
