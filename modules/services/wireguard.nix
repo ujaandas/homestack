@@ -91,13 +91,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = (!cfg.relay.enable) || cfg.relay.tcpPorts != [ ];
-        message = "Set homestack.services.wireguard.relay.tcpPorts when relay mode is enabled.";
-      }
-    ];
-
     networking = {
       useNetworkd = true;
 
@@ -123,8 +116,18 @@ in
         enable = true;
         inherit (cfg.relay) externalInterface;
         internalInterfaces = [ cfg.interfaceName ];
-        forwardPorts = relayForwardPorts;
+        forwardPorts = lib.mkIf (cfg.relay.tcpPorts != [ ]) relayForwardPorts;
       };
+
+      interfaces.eth0.ipv4.routes = [
+        {
+          address = "192.168.100.0";
+          prefixLength = 24;
+          options = {
+            scope = "link";
+          };
+        }
+      ];
     };
   };
 }

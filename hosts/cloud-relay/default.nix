@@ -58,8 +58,8 @@ in
         enable = true;
         inherit domain contactEmail;
         upstreams = {
-          pocketid = "10.77.0.2:3000";
-          netbird = "10.77.0.2";
+          pocketid = "192.168.100.3:3000";
+          netbird = "192.168.100.5";
         };
       };
 
@@ -71,7 +71,10 @@ in
         privateKeyFile = config.age.secrets.wireguard_ingress_key.path;
         peer = {
           publicKey = "HOVgj99NRFC6bYNmR+bxJuRleX1VOvvWgDlCJQLmRQs=";
-          allowedIPs = [ "10.77.0.2/32" ];
+          allowedIPs = [
+            "10.77.0.2/32"
+            "192.168.100.0/24"
+          ];
           persistentKeepalive = 25;
         };
 

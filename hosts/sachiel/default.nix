@@ -186,10 +186,14 @@ in
               publicKey = "hekhMcqcBeJbwScN51soaO1/BjVIhA2eBDPN5/Pt5Wg=";
               endpoint = cloudRelayEndpoint;
               allowedIPs = [
-                "0.0.0.0/0"
-                "::/0"
+                "10.77.0.1/32"
               ];
               persistentKeepalive = 25;
+            };
+
+            relay = {
+              enable = true;
+              externalInterface = "eth0";
             };
           };
         }
