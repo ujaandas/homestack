@@ -20,6 +20,13 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        # Build packages or images
+        packages = {
+          openwrt = pkgs.callPackage ./img/linksys-mx2000 {
+            inherit openwrt-imagebuilder;
+          };
+        };
+
         # Devshell for dev machines (e.g., macbook) AND actual homelab nodes
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
