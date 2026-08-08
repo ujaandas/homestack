@@ -18,8 +18,19 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            just
+          ];
+        };
+
         checks = deploy-rs.lib.${system}.deployChecks self.deploy;
-        devShells.default = pkgs.mkShell { };
+
+        formatter = pkgs.writeShellApplication {
+          name = "format";
+          runtimeInputs = [ pkgs.nixfmt-tree ];
+          text = "treefmt --walk git";
+        };
       }
     )
     // {
