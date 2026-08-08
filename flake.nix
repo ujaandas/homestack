@@ -3,6 +3,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
     deploy-rs.url = "github:serokell/deploy-rs";
+    openwrt-imagebuilder.url = "github:astro/nix-openwrt-imagebuilder";
   };
   outputs =
     {
@@ -10,8 +11,9 @@
       nixpkgs,
       flake-utils,
       deploy-rs,
+      openwrt-imagebuilder,
       ...
-    }@inputs:
+    }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
