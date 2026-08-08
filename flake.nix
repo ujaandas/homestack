@@ -18,15 +18,19 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        # Devshell for dev machines (e.g., macbook) AND actual homelab nodes
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             pkgs.deploy-rs
             just
+            just-lsp
+            just-formatter
             statix
             nixfmt-tree
           ];
         };
 
+        # Checks to run during deployment
         checks = {
           statix-lint = pkgs.runCommand "statix-lint" { buildInputs = [ pkgs.statix ]; } ''
             statix check ${self}
@@ -35,6 +39,7 @@
         }
         // deploy-rs.lib.${system}.deployChecks self.deploy;
 
+        # Formatting
         formatter = pkgs.writeShellApplication {
           name = "format";
           runtimeInputs = [ pkgs.nixfmt-tree ];
@@ -43,7 +48,10 @@
       }
     )
     // {
+      # Define homelab host "configs" here
       # nixosConfigurations = {};
+
+      # Define homelab host "deployments" here
       deploy = {
         nodes = { };
       };
