@@ -20,11 +20,20 @@
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
+            pkgs.deploy-rs
             just
+            statix
+            nixfmt-tree
           ];
         };
 
-        checks = deploy-rs.lib.${system}.deployChecks self.deploy;
+        checks = {
+          statix-lint = pkgs.runCommand "statix-lint" { buildInputs = [ pkgs.statix ]; } ''
+            statix check ${self}
+            touch $out
+          '';
+        }
+        // deploy-rs.lib.${system}.deployChecks self.deploy;
 
         formatter = pkgs.writeShellApplication {
           name = "format";
@@ -35,6 +44,8 @@
     )
     // {
       # nixosConfigurations = {};
-      # deploy = { };
+      deploy = {
+        nodes = { };
+      };
     };
 }
