@@ -18,12 +18,34 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        checks = deploy-rs.lib.${system}.deployChecks self.deploy;
-        devShells.default = pkgs.mkShell { };
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            pkgs.deploy-rs
+            just
+            statix
+            nixfmt-tree
+          ];
+        };
+
+        checks = {
+          statix-lint = pkgs.runCommand "statix-lint" { buildInputs = [ pkgs.statix ]; } ''
+            statix check ${self}
+            touch $out
+          '';
+        }
+        // deploy-rs.lib.${system}.deployChecks self.deploy;
+
+        formatter = pkgs.writeShellApplication {
+          name = "format";
+          runtimeInputs = [ pkgs.nixfmt-tree ];
+          text = "treefmt --walk git";
+        };
       }
     )
     // {
       # nixosConfigurations = {};
-      # deploy = { };
+      deploy = {
+        nodes = { };
+      };
     };
 }
