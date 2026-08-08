@@ -22,7 +22,7 @@
       {
         # Build packages or images
         packages = {
-          openwrt = pkgs.callPackage ./img/linksys-mx2000 {
+          linksys-mx2000 = pkgs.callPackage ./img/linksys-mx2000 {
             inherit openwrt-imagebuilder;
           };
         };
